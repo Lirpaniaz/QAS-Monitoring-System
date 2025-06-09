@@ -1,0 +1,2190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Information</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: #f2f2f2;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #1c1c64;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            position: fixed;
+            height: 100%;
+            top: 0;
+            bottom: 0;
+            justify-content: space-between;
+        }
+        .sidebar h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 0 10px;
+            font-size: 25px;
+        }
+        .menu {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            padding: 0 10px;
+            gap: 10px;
+        }
+        .menu a, .dropdown-btn {
+            color: white;
+            text-decoration: none;
+            padding: 15px;
+            cursor: pointer;
+            font-size: 18px;
+            border-radius: 10px;
+            background-color: #1c1c64;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+        .menu a:hover, .dropdown-btn:hover {
+            background-color: #da471f;
+        }
+        .dropdown-container {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .dropdown-container a {
+            font-size: 16px;
+            padding: 12px;
+            background-color: #1c1c64;
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+        .dropdown-container a:hover {
+            background-color: #da471f;
+        }
+        .logout-container {
+            padding: 0 20px 20px;
+        }
+        .logout-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #ff5c33;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+        .logout-btn:hover {
+            background-color: #e04a22;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            flex-grow: 1;
+            height: 100%;
+            overflow: hidden;
+        }
+        .dashboard-title {
+            font-weight: bold;
+            font-size: 30px;
+            margin-bottom: 20px;
+        }
+        .search-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .search-container input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+        .search-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin-bottom: 20px;
+            gap: 20px;
+            flex-wrap: nowrap;
+        }
+        .search-container input {
+            flex: 1;
+            max-width: 300px;
+            padding: 12px 16px;
+            border: 1px solid #ccc;
+            border-radius: 30px;
+            outline: none;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .search-container input:focus {
+            border-color: #da471f;
+            box-shadow: 0 0 5px rgba(218, 71, 31, 0.3);
+        }
+        .add-btn {
+            background-color: #da471f;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 30px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            flex-shrink: 0;
+        }
+        .add-btn:hover {
+            background-color: #c03d1b;
+        }
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .search-box .search-icon {
+            position: absolute;
+            left: 20px;
+            color: #999;
+            font-size: 16px;
+            pointer-events: none;
+        }
+        .search-box input {
+            padding-left: 40px;
+        }
+        .logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 120px;
+            height: auto;
+            border-radius: 50%; 
+        }
+
+        /* Table Container Styles */
+        .table-scroll-container {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: auto; /* Add vertical scrolling */
+            max-height: calc(100vh - 150px); /* Adjust based on your layout */
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            background: white;
+            position: relative;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            min-width: 7500px;
+            border-collapse: collapse;
+            font-size: 14px;
+            text-align: center;
+            table-layout: fixed;
+        }
+
+        /* Sticky Column Implementation */
+        table th:first-child,
+        table td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 5;
+            background: white;
+        }
+
+        /* Make the table header sticky */
+        table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        /* Sticky Header Implementation */
+        table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #1c1c64;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 13px;
+            border-right: 2px solid white;
+        }
+
+        /* Sticky Corner Cell (Top-left cell) */
+        table thead th:first-child {
+            left: 0;
+            z-index: 15;
+        }
+
+        /* Table Body Styles */
+        td {
+            padding: 10px 8px;
+            border-bottom: 2px solid #e0e0e0;
+            vertical-align: middle;
+            word-wrap: break-word;
+        }
+
+        /* Alternating Row Colors */
+        tr:nth-child(even) td {
+            background-color: #f8f9fa;
+        }
+
+        tr:nth-child(even) td:first-child {
+            background-color: #f8f9fa;
+        }
+
+        tr:hover td {
+            background-color: #f1f3f5;
+        }
+
+        tr:hover td:first-child {
+            background-color: #f1f3f5;
+        }
+
+        /* Header Group Styles */
+        th[colspan] {
+            background-color: #1c1c64;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            position: relative;
+            font-size: 17px;
+        }
+
+        /* Main Header Row */
+        thead tr:first-child th {
+            background-color: rgb(95, 113, 246);
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 2px solid white;
+        }
+
+        /* Sub-headers (second row) */
+        thead tr:nth-child(2) th {
+            background-color: rgb(95, 113, 246);
+            color: white;
+            font-weight: normal;
+            text-transform: none;
+            font-size: 15px;
+            border-top: none;
+        }
+
+        /* Empty spacer cells in sub-header */
+        thead tr:nth-child(2) th:empty {
+            background-color: #3a3a8c;
+        }
+
+        /* Cell Content Styling */
+        td a {
+            color: #1c1c64;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        td a:hover {
+            color: #da471f;
+            text-decoration: underline;
+        }
+
+        /* Action Buttons Container */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        /* Action Button Styles */
+        .action-btn {
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+        }
+
+        .edit-btn {
+            color: #28a745;
+            border: 1px solid #28a745;
+        }
+
+        .edit-btn:hover {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .delete-btn {
+            color: #dc3545;
+            border: 1px solid #dc3545;
+        }
+
+        .delete-btn:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        /* Status Highlighting */
+        .contract-id-expiring-1day {
+            color: #d32f2f !important;
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
+        }
+
+        .contract-id-expiring-2days {
+            color: #FF4500 !important;
+            font-weight: bold;
+        }
+
+        .contract-id-expiring-3days {
+            color: #1976d2 !important;
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        /* Form Popup Styles */
+        .popup-form {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0px 0px 15px rgba(0,0,0,0.5);
+            z-index: 1000;
+            border-radius: 10px;
+            width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .popup-form input {
+            display: block;
+            width: calc(100% - 20px);
+            margin: 10px auto;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .popup-form label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .popup-form input[type="text"],
+        .popup-form input[type="date"],
+        .popup-form select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .popup-form button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .popup-form button:first-of-type {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .popup-form button:last-of-type {
+            background-color: #28a745;
+            color: white;
+        }
+
+        /* Contract Details Popup Styles */
+        .contract-details-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            z-index: 1001;
+            width: 90%;
+            max-width: 1200px;
+            max-height: 90vh;
+            overflow: auto;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+        }
+
+        .contract-details-container {
+            padding: 20px;
+        }
+
+        .contract-details-header {
+            background-color: #1c1c64;
+            color: white;
+            padding: 15px;
+            border-radius: 5px 5px 0 0;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .contract-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .contract-details-section {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background-color: #f0f0f0;
+            padding: 10px 15px;
+            font-weight: bold;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .section-content {
+            padding: 15px;
+            background: white;
+        }
+
+        .detail-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #555;
+            white-space: nowrap;
+        }
+
+        .detail-value {
+            padding: 8px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            word-break: break-word;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-active {
+            background-color: #28a745;
+        }
+
+        .status-warning {
+            background-color: #ffc107;
+        }
+
+        .status-danger {
+            background-color: #dc3545;
+        }
+
+        .close-details-btn {
+            background-color: #da471f;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            font-weight: bold;
+        }
+
+        .close-details-btn:hover {
+            background-color: #c03d1b;
+        }
+
+        /* Excel-like table for documents section */
+        .documents-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .documents-table th {
+            background-color: #1c1c64;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            font-weight: normal;
+        }
+
+        .documents-table td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .documents-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .check-mark {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        /* Notification Popup Styles */
+        .notification-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffeb3b;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            z-index: 1002;
+            animation: buzz 0.5s infinite alternate;
+            border: 3px solid #ff9800;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .notification-content h3 {
+            color: #d32f2f;
+            margin-bottom: 15px;
+        }
+
+        .notification-content p {
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .notification-content button {
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .notification-content button:hover {
+            background-color: #b71c1c;
+        }
+
+        @keyframes buzz {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            25% { transform: translate(-50%, -50%) rotate(2deg); }
+            50% { transform: translate(-50%, -50%) rotate(0deg); }
+            75% { transform: translate(-50%, -50%) rotate(-2deg); }
+            100% { transform: translate(-50%, -50%) rotate(0deg); }
+        }
+
+        /* Form Section Styles */
+        .form-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .form-section h3 {
+            margin-bottom: 15px;
+            color: #1c1c64;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        /* Two-column layout for form fields */
+        .form-columns {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-column {
+            flex: 1;
+        }
+
+        /* Action Buttons Styles */
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 5px;
+            border: none;
+            cursor: pointer;
+            background: none;
+            color: #555;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        .edit-btn:hover {
+            color: #28a745;
+        }
+
+        .delete-btn:hover {
+            color: #dc3545;
+        }
+
+        .dashboard-title {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .download-btn {
+            background-color: #1c1c64;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            width: 100px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .download-btn:hover {
+            background-color: #da471f;
+            transform: scale(1.1);
+        }
+        td {
+            white-space: normal !important;
+            word-break: break-word;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div>
+            <h3>QUALITY<br>ASSURANCE<br>SECTION</h3>
+            <div class="menu">
+                <a href="admin_dashboard.html">Dashboard</a>
+                <a href="user_list.html">Users</a>
+                <a href="info.html">Contract Information</a>
+                <a href="files.html">Files</a>
+                <a href="FDT.html">FDT Scheduler</a>
+                <a href="others.html">Others</a>
+            </div>
+        </div>
+        <div class="logout-container">
+            <button class="logout-btn">LOG OUT</button>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="search-container">
+            <button class="add-btn" onclick="openForm()">Add Contract</button>
+           
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search" onkeyup="searchContract()">
+            </div>
+        </div>
+        <div class="dashboard-title">CONTRACTS INFORMATION
+             <button class="download-btn" onclick="downloadContractData()" title="Download Contract Data">
+            <i class="fas fa-download"></i>Download
+        </button>
+        </div>
+        <div class="table-scroll-container">
+        <table >
+            <thead>
+                <!-- First row with main headers -->
+        <tr>
+            <th colspan="12"></th> <!-- Span for first 12 columns -->
+            <th colspan="2">QUALITY CONTROL PROGRAM</th>
+            <th colspan="5" style="background-color: #28a745;">SWA [%]</th>
+            <th colspan="2" style="background-color: #1976d2;">CQCA</th>
+            <th colspan="16"></th>
+            <th colspan="2" style="background-color: #948f4b;">PROGRAM OF WORKS</th>
+            <th colspan="4" style="background-color: #15b182;">VARIATIONS</th>
+            <th colspan="8"></th>
+
+            <!-- Rest of your headers -->
+        </tr>
+        
+        <!-- Second row with column headers -->
+        <tr>
+    <!-- First 12 headers -->
+    <th>CONTRACT ID</th>
+    <th>CONTRACT NAME/LOCATION</th>
+    <th>APPROPRIATION</th>
+    <th>APPROVED BUDGET COST</th>
+    <th>CONTRACT AMOUNT</th>
+    <th>REVISED CONTRACT AMOUNT</th>
+    <th>CONTRACTOR</th>
+    <th>CONTRACT DURATION</th>
+    <th>NOTICE TO PROCEED</th>
+    <th>EXPIRATION DATE</th>
+    <th>REMAINING DAYS</th>
+    <th>STATUS OF PROJECT</th>
+
+    <!-- Quality Control Program headers -->
+    <th>ORIGINAL</th>
+    <th>REVISED</th>
+
+    <!-- SWA% headers -->
+    <th style="background-color: #28a745;">1ST BILLING</th>
+    <th style="background-color: #28a745;">2ND BILLING</th>
+    <th style="background-color: #28a745;">3RD BILLING</th>
+    <th style="background-color: #28a745;">4TH BILLING</th>
+    <th style="background-color: #28a745;">FINAL BILLING</th>
+
+    <!-- CQCA headers -->
+    <th style="background-color: #1976d2;">WEEKLY</th>
+    <th style="background-color: #1976d2;">MONTHLY</th>
+
+    <th>STATUS OF TEST</th>
+    <th>STATUS OF FIELD AND LABORATORY TEST</th>
+    <th>SUMMARY OF FIELD TEST</th>
+    <th>MATERIALS LOGBOOK</th>
+   
+    <th>REPORT ON CONCRETE WORKS</th>
+    <th>SITE INSTRUCTION</th>
+    <th>DESIGN MIX</th>
+    <th>PERT/CPM/GANTT CHART</th>
+    <th>TRIAL MIX</th>
+    <th>GEOTAGGED PHOTOS</th>
+    
+    <th>POURING PERMITS</th>
+    <th>ASPHALT CONCRETE PAVEMENT NOTICE TO LAY</th>
+    <th>ORIGINAL PLAN</th>
+    <th>REVISED PLAN</th>
+    <th>AS STAKED PLAN</th>
+    <th>AS-BUILT PLAN</th>
+
+    <th style="background-color: #948f4b;">ORIGINAL</th>
+    <th style="background-color: #948f4b;">REVISED</th>
+
+    <th style="background-color: #15b182;">V.O.1</th>
+    <th style="background-color: #15b182;">V.O.2</th>
+    <th style="background-color: #15b182;">V.O.3</th>
+    <th style="background-color: #15b182;">V.O.4</th>
+
+    <th>TIME SUSPENSION REPORT</th>
+    <th>TIME EXTENSION REPORT</th>
+    <th>RESUMPTION ORDER</th>
+    <th>PDO</th>
+    <th>CONTRACTOR'S MATERIALS ENGINEER</th>
+    <th>PROJECT ENGINEER</th>
+    <th>MATERIALS ENGINEER</th>
+    <th>PROJECT INSPECTOR</th>
+    <th>RESIDENT ENGINEER</th>
+    <th>PROVISIONAL MATERIALS ENGINEER</th>
+    <th>PROVISIONAL MATERIALS INSPECTOR</th>
+    <th>QUALITY ASSURANCE IN-CHARGE</th>
+    <th>ACTIONS</th>
+</tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        </div>
+
+        <div class="overlay" id="overlay"></div>
+        <div class="popup-form" id="popupForm">
+            <h2>Add New Contract</h2>
+            
+            <div class="form-section">
+                <h3>Basic Information</h3>
+                <div class="form-columns">
+                    <div class="form-column">
+                        <label>Contract ID</label>
+                        <input type="text" id="contractId">
+                        
+                        <label>Contract Name</label>
+                        <input type="text" id="contractName">
+                        
+                        <label>Location</label>
+                        <input type="text" id="location">
+                        
+                        <label>Appropriation</label>
+                        <input type="text" id="appropriation">
+                        
+                        <label>Approved Budget Cost</label>
+                        <input type="text" id="approvedBudgetCost">
+                        
+                        <label>Contract Amount</label>
+                        <input type="text" id="contractAmount">
+                    </div>
+                    <div class="form-column">
+                        <label>Revised Contract Amount</label>
+                        <input type="text" id="revisedContractAmount">
+                        
+                        <label>Contractor</label>
+                        <input type="text" id="contractor">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <div class="form-columns">
+                    <div class="form-column">
+                        <label>Has Notice to Proceed?</label>
+                        <div style="margin-bottom: 10px;">
+                            <input type="radio" name="hasNoticeToProceed" id="hasNoticeYes" value="Yes" onclick="toggleNoticeToProceed(true)">
+                            <label for="hasNoticeYes" style="margin-right: 15px;">Yes</label>
+                            
+                            <input type="radio" name="hasNoticeToProceed" id="hasNoticeNo" value="No" onclick="toggleNoticeToProceed(false)">
+                            <label for="hasNoticeNo">No</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="noticeToProceedSection" style="display: none; margin-top: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 8px; background-color: #f9f9f9;">
+                <h3 style="margin-bottom: 15px; color: #1c1c64; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Notice to Proceed Details</h3>
+                
+                <div class="form-columns">
+                    <div class="form-column">
+                        <label>Start Date</label>
+                        <input type="date" id="noticeToProceed" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                        
+                        <label>Expiration Date</label>
+                        <input type="date" id="expiration" style="width: 100%; padding: 8px; margin-bottom: 10px;" onchange="calculateDuration()">
+                        
+                        <label>Contract Duration (days)</label>
+                        <input type="text" id="contractDuration" style="width: 100%; padding: 8px;" readonly>
+
+                        <h3>PROJECT STATUS</h3>
+                        <label>Status of Project</label>
+                        <select id="projectStatus">
+                            <option value="">Select Status</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Accomplished">Accomplished</option>
+                            <option value="Suspended">Suspended</option>
+                            <option value="Terminated">Terminated</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="closeForm()">Cancel</button>
+            <button onclick="saveContract()">Save</button>
+        </div>
+    
+        <div class="contract-details-popup" id="contractDetailsPopup">
+            <div class="contract-details-container">
+                <div id="contractDetailsContent"></div>
+            </div>
+        </div>
+        
+        <div id="notificationPopup" class="notification-popup">
+            <div class="notification-content">
+                <h3>Contract Expiration Alert</h3>
+                <p id="notificationMessage"></p>
+                <button onclick="closeNotification()">OK</button>
+            </div>
+        </div>
+         
+        <audio id="notificationSound" src="notification.mp3" preload="auto"></audio>
+    </div>
+
+    <script type="module">
+        // Import Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue, get, update, remove } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuxUQaXiWorKsz1wlpCmho2u9OQq2bAnE",
+            authDomain: "qas-section.firebaseapp.com",
+            databaseURL: "https://qas-section-default-rtdb.firebaseio.com/",
+            projectId: "qas-section",
+            storageBucket: "qas-section.firebasestorage.app",
+            messagingSenderId: "76857155340",
+            appId: "1:76857155340:web:8b497e036eb55c33607329"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        console.log("Firebase app initialized:", app);
+        const database = getDatabase(app);
+        const contractsRef = ref(database, "contracts");
+        const usersRef = ref(database, "users");
+
+        // Global variable to track which contract is being edited
+        let currentEditingId = null;
+
+        // Function to load users into the dropdowns
+        function loadUsers() {
+            const personnelSelects = [
+                "projectEngineer", "materialsEngineer", "projectInspector",
+                "residentEngineer", "provisionalMaterialsEngineer",
+                "provisionalMaterialsInspector", "qaIncharge", "contractorMaterialsEngineer"
+            ];
+            
+            onValue(usersRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const users = snapshot.val();
+                    
+                    personnelSelects.forEach(selectId => {
+                        const selectElement = document.getElementById(selectId);
+                        if (selectElement) {
+                            selectElement.innerHTML = '<option value="">Select Person</option>';
+                            
+                            Object.keys(users).forEach(key => {
+                                const user = users[key];
+                                if (user.firstName && user.lastName) {
+                                    const option = document.createElement("option");
+                                    option.value = `${user.firstName} ${user.lastName}`;
+                                    option.textContent = `${user.firstName} ${user.lastName}`;
+                                    selectElement.appendChild(option);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        // Form Functions
+        window.openForm = function() {
+            closeContractDetails(); // Close any open details popup
+            document.getElementById("popupForm").style.display = "block";
+            document.getElementById("overlay").style.display = "block";
+            resetForm();
+            currentEditingId = null;
+            document.getElementById("contractId").readOnly = false;
+            document.querySelector("#popupForm h2").textContent = "Add New Contract";
+        };
+
+        window.closeForm = function() {
+            document.getElementById("popupForm").style.display = "none";
+            document.getElementById("overlay").style.display = "none";
+        };
+
+        function resetForm() {
+            const form = document.getElementById("popupForm");
+            const inputs = form.querySelectorAll("input, select");
+            inputs.forEach(input => {
+                if (input.type === "text" || input.type === "date") {
+                    input.value = "";
+                } else if (input.tagName === "SELECT") {
+                    input.selectedIndex = 0;
+                }
+            });
+        }
+
+        window.toggleNoticeToProceed = function(show) {
+            const section = document.getElementById('noticeToProceedSection');
+            if (show) {
+                section.style.display = 'block';
+                document.getElementById('noticeToProceed').value = '';
+                document.getElementById('expiration').value = '';
+                document.getElementById('contractDuration').value = '';
+            } else {
+                section.style.display = 'none';
+                document.getElementById('noticeToProceed').value = '';
+                document.getElementById('expiration').value = '';
+                document.getElementById('contractDuration').value = '';
+            }
+        }
+
+   window.downloadContractData = async function() {
+    try {
+        if (typeof XLSX === 'undefined') {
+            throw new Error('Required library "SheetJS" (xlsx) not loaded. Please include the CDN script.');
+        }
+
+        if (typeof get === 'undefined' || !contractsRef) {
+            throw new Error('Firebase not properly initialized. Ensure Firebase SDK is loaded and contractsRef is defined.');
+        }
+
+        console.log('Fetching contract data from Firebase...');
+        const snapshot = await get(contractsRef);
+        
+        if (!snapshot.exists()) {
+            console.warn('No contract data available in snapshot');
+            alert('No contract data available to download.');
+            return;
+        }
+
+        const contracts = snapshot.val();
+        console.log(`Found ${Object.keys(contracts).length} contracts to export`);
+
+        // Define all cell styles
+        const styles = {
+            // Main header style (blue background with white text)
+            mainHeader: {
+                font: { sz: 14, bold: true, color: { rgb: "FFFFFFFF" } },
+                fill: { fgColor: { rgb: "FF1C1C64" } }, // Dark blue
+                alignment: { horizontal: "center", vertical: "center", wrapText: true },
+                border: {
+                    top: { style: "thin", color: { rgb: "FF1C1C64" } },
+                    bottom: { style: "thin", color: { rgb: "FF1C1C64" } },
+                    left: { style: "thin", color: { rgb: "FF1C1C64" } },
+                    right: { style: "thin", color: { rgb: "FF1C1C64" } }
+                }
+            },
+            // Column header style (light blue background with white text)
+            columnHeader: {
+                font: { sz: 11, bold: true, color: { rgb: "FFFFFFFF" } },
+                fill: { fgColor: { rgb: "FF5F71F6" } }, // Lighter blue
+                alignment: { horizontal: "center", vertical: "center", wrapText: true },
+                border: {
+                    top: { style: "thin", color: { rgb: "FFFFFFFF" } },
+                    bottom: { style: "thin", color: { rgb: "FFFFFFFF" } },
+                    left: { style: "thin", color: { rgb: "FF1C1C64" } },
+                    right: { style: "thin", color: { rgb: "FF1C1C64" } }
+                }
+            },
+            // SWA header style (green)
+            swaHeader: {
+                font: { sz: 11, bold: true, color: { rgb: "FFFFFFFF" } },
+                fill: { fgColor: { rgb: "FF28A745" } }, // Green
+                alignment: { horizontal: "center", vertical: "center", wrapText: true },
+                border: {
+                    top: { style: "thin", color: { rgb: "FFFFFFFF" } },
+                    bottom: { style: "thin", color: { rgb: "FFFFFFFF" } },
+                    left: { style: "thin", color: { rgb: "FF1C1C64" } },
+                    right: { style: "thin", color: { rgb: "FF1C1C64" } }
+                }
+            },
+            // CQCA header style (blue)
+            cqcaHeader: {
+                font: { sz: 11, bold: true, color: { rgb: "FFFFFFFF" } },
+                fill: { fgColor: { rgb: "FF1976D2" } }, // Blue
+                alignment: { horizontal: "center", vertical: "center", wrapText: true },
+                border: {
+                    top: { style: "thin", color: { rgb: "FFFFFFFF" } },
+                    bottom: { style: "thin", color: { rgb: "FFFFFFFF" } },
+                    left: { style: "thin", color: { rgb: "FF1C1C64" } },
+                    right: { style: "thin", color: { rgb: "FF1C1C64" } }
+                }
+            },
+            // Program of Works header style (gold)
+            programHeader: {
+                font: { sz: 11, bold: true, color: { rgb: "FFFFFFFF" } },
+                fill: { fgColor: { rgb: "FF948F4B" } }, // Gold
+                alignment: { horizontal: "center", vertical: "center", wrapText: true },
+                border: {
+                    top: { style: "thin", color: { rgb: "FFFFFFFF" } },
+                    bottom: { style: "thin", color: { rgb: "FFFFFFFF" } },
+                    left: { style: "thin", color: { rgb: "FF1C1C64" } },
+                    right: { style: "thin", color: { rgb: "FF1C1C64" } }
+                }
+            },
+            // Variations header style (teal)
+            variationHeader: {
+                font: { sz: 11, bold: true, color: { rgb: "FFFFFFFF" } },
+                fill: { fgColor: { rgb: "FF15B182" } }, // Teal
+                alignment: { horizontal: "center", vertical: "center", wrapText: true },
+                border: {
+                    top: { style: "thin", color: { rgb: "FFFFFFFF" } },
+                    bottom: { style: "thin", color: { rgb: "FFFFFFFF" } },
+                    left: { style: "thin", color: { rgb: "FF1C1C64" } },
+                    right: { style: "thin", color: { rgb: "FF1C1C64" } }
+                }
+            },
+            // Regular data cell style
+            dataCell: {
+                font: { sz: 11 },
+                alignment: { horizontal: "center", vertical: "center", wrapText: true },
+                border: {
+                    top: { style: "thin", color: { rgb: "FFE0E0E0" } },
+                    bottom: { style: "thin", color: { rgb: "FFE0E0E0" } },
+                    left: { style: "thin", color: { rgb: "FFE0E0E0" } },
+                    right: { style: "thin", color: { rgb: "FFE0E0E0" } }
+                }
+            },
+            // Contract ID cell style (skyblue background)
+            contractIdCell: {
+                font: { sz: 11, bold: true },
+                fill: { fgColor: { rgb: "FF87CEEB" } }, // Skyblue
+                alignment: { horizontal: "center", vertical: "center" }
+            },
+            // Expired contract style (red text)
+            expiredCell: {
+                font: { color: { rgb: "FFD32F2F" }, bold: true },
+                alignment: { horizontal: "center", vertical: "center" }
+            },
+            // Warning style (orange text)
+            warningCell: {
+                font: { color: { rgb: "FFFF4500" }, bold: true },
+                alignment: { horizontal: "center", vertical: "center" }
+            },
+            // Notice style (blue text)
+            noticeCell: {
+                font: { color: { rgb: "FF1976D2" }, bold: true },
+                alignment: { horizontal: "center", vertical: "center" }
+            },
+            // Even row style (light gray background)
+            evenRow: {
+                fill: { fgColor: { rgb: "FFF8F9FA" } }
+            },
+            // Check mark style (green)
+            checkMark: {
+                font: { color: { rgb: "FF28A745" }, bold: true }
+            }
+        };
+
+        // Create workbook and worksheet
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([[]]);
+
+        // Add headers (two rows)
+        const headers = [
+            // First row with grouped headers
+            [
+                "", "", "", "", "", "", "", "", "", "", "", "", // First 12 columns
+                "QUALITY CONTROL PROGRAM", "", // QCP (2 columns)
+                "SWA [%]", "", "", "", "", // SWA (5 columns)
+                "CQCA", "", // CQCA (2 columns)
+                "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", // 17 empty columns
+                "", "PROGRAM OF WORKS", // Program of works (2 columns)
+                "", "VARIATIONS", "", "", // Variations (4 columns)
+                "", "", "", "", "", "", "", "" // 8 empty columns
+            ],
+            // Second row with all column headers
+            [
+                "CONTRACT ID", "CONTRACT NAME/LOCATION", "APPROPRIATION", "APPROVED BUDGET COST", 
+                "CONTRACT AMOUNT", "REVISED CONTRACT AMOUNT", "CONTRACTOR", "CONTRACT DURATION", 
+                "NOTICE TO PROCEED", "EXPIRATION DATE", "REMAINING DAYS", "STATUS OF PROJECT",
+                "ORIGINAL", "REVISED",
+                "1ST BILLING", "2ND BILLING", "3RD BILLING", "4TH BILLING", "FINAL BILLING",
+                "WEEKLY", "MONTHLY",
+                "STATUS OF TEST", "STATUS OF FIELD AND LABORATORY TEST", "SUMMARY OF FIELD TEST",
+                "MATERIALS LOGBOOK", "REPORT ON CONCRETE WORKS", "SITE INSTRUCTION",
+                "DESIGN MIX", "PERT/CPM/GANTT CHART", "TRIAL MIX", "GEOTAGGED PHOTOS",
+                "TEST REPORTS", "POURING PERMITS", "ASPHALT CONCRETE PAVEMENT NOTICE TO LAY",
+                "ORIGINAL PLAN", "REVISED PLAN", "AS STAKED PLAN", "AS-BUILT PLAN",
+                "ORIGINAL", "REVISED",
+                "V.O.1", "V.O.2", "V.O.3", "V.O.4",
+                "TIME SUSPENSION REPORT", "TIME EXTENSION REPORT", "RESUMPTION ORDER", "PDO",
+                "CONTRACTOR'S MATERIALS ENGINEER", "PROJECT ENGINEER", "MATERIALS ENGINEER",
+                "PROJECT INSPECTOR", "RESIDENT ENGINEER", "PROVISIONAL MATERIALS ENGINEER",
+                "PROVISIONAL MATERIALS INSPECTOR", "QUALITY ASSURANCE IN-CHARGE"
+            ]
+        ];
+
+        XLSX.utils.sheet_add_aoa(ws, headers, { origin: "A1" });
+
+        // Style headers
+        for (let c = 0; c < headers[0].length; c++) {
+            const cell1 = XLSX.utils.encode_cell({ r: 0, c });
+            const cell2 = XLSX.utils.encode_cell({ r: 1, c });
+            
+            // Main header style (first row)
+            if (!ws[cell1]) ws[cell1] = {};
+            ws[cell1].s = styles.mainHeader;
+            
+            // Column header styles (second row)
+            if (!ws[cell2]) ws[cell2] = {};
+            
+            // Apply special styles based on column groups
+            if (c >= 14 && c <= 18) { // SWA columns
+                ws[cell2].s = styles.swaHeader;
+            } else if (c >= 19 && c <= 20) { // CQCA columns
+                ws[cell2].s = styles.cqcaHeader;
+            } else if (c >= 37 && c <= 38) { // Program of Works
+                ws[cell2].s = styles.programHeader;
+            } else if (c >= 41 && c <= 44) { // Variations
+                ws[cell2].s = styles.variationHeader;
+            } else {
+                ws[cell2].s = styles.columnHeader;
+            }
+        }
+
+        // Process and add contract data
+        Object.keys(contracts).forEach((contractId, rowIndex) => {
+            const contract = contracts[contractId];
+            
+            // Calculate remaining days and style
+            let remainingDays = "N/A";
+            let remainingDaysStyle = {};
+            
+            if (contract.expiration) {
+                try {
+                    const expirationDate = new Date(contract.expiration);
+                    const currentDate = new Date();
+                    currentDate.setHours(0, 0, 0, 0);
+                    const timeDiff = expirationDate - currentDate;
+                    const diffInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                    
+                    remainingDays = diffInDays > 0 ? diffInDays : "Expired";
+                    
+                    if (diffInDays <= 1) {
+                        remainingDaysStyle = styles.expiredCell;
+                    } else if (diffInDays <= 3) {
+                        remainingDaysStyle = styles.warningCell;
+                    } else if (diffInDays <= 7) {
+                        remainingDaysStyle = styles.noticeCell;
+                    }
+                } catch (e) {
+                    console.error(`Error processing expiration date for contract ${contractId}:`, e);
+                    remainingDays = "Invalid Date";
+                }
+            }
+
+            // Prepare row data
+            const rowData = [
+                contract.contractId || '',
+                `${contract.contractName || ''}\n${contract.location || ''}`,
+                contract.appropriation || '',
+                contract.approvedBudgetCost || '',
+                contract.contractAmount || '',
+                contract.revisedContractAmount || '',
+                contract.contractor || '',
+                contract.contractDuration || '',
+                contract.noticeToProceed || '',
+                contract.expiration || '',
+                remainingDays,
+                contract.projectStatus || '',
+                contract.QCPoriginal ? '✓' : '',
+                contract.QCPrevised ? '✓' : '',
+                contract.swas?.FirstBilling?.date || '',
+                contract.swas?.SecondBilling?.date || '',
+                contract.swas?.ThirdBilling?.date || '',
+                contract.swas?.FourthBilling?.date || '',
+                contract.swas?.Final?.date || '',
+                contract.CQCAweekly ? '✓' : '',
+                contract.CQCAmonthly ? '✓' : '',
+                contract.statusTests?.percentage || '',
+                contract.fieldLabTestStatus || '',
+                contract.summaryFieldTest?.date || '',
+                contract.materialsLogbook?.lastUpdated || '',
+                contract.concretingReport?.status || '',
+                contract.siteInstructions ? Object.values(contract.siteInstructions).map(i => i.date).join(', ') : '',
+                contract.designMix?.scannedDate || '',
+                contract.pertcpmGantchart || '',
+                contract.trialMix || '',
+                contract.geotaggedPhotos || '',
+                contract.testReports || '',
+                contract.concretePermits?.status || '',
+                contract.acpntl?.date || '',
+                contract.originalPlan ? '✓' : '',
+                contract.revisedPlan ? '✓' : '',
+                contract.asStakedPlan ? '✓' : '',
+                contract.asBuiltPlan ? '✓' : '',
+                contract.programOfWorksOriginal ? '✓' : '',
+                contract.programOfWorksRevised ? '✓' : '',
+                contract.variationOrders?.vo1?.checked ? '✓' : '',
+                contract.variationOrders?.vo2?.checked ? '✓' : '',
+                contract.variationOrders?.vo3?.checked ? '✓' : '',
+                contract.variationOrders?.vo4?.checked ? '✓' : '',
+                contract.timeSuspensionReports ? Object.values(contract.timeSuspensionReports).map(s => s.startDate).join(', ') : '',
+                contract.timeExtensionReports ? Object.values(contract.timeExtensionReports).map(r => r.startDate).join(', ') : '',
+                contract.resumptionOrders ? Object.values(contract.resumptionOrders).map(r => r.date).join(', ') : '',
+                contract.pdo?.status || '',
+                contract.personnel?.contractorsMaterialsEngineer?.name || '',
+                contract.personnel?.projectEngineer?.name || '',
+                contract.personnel?.materialsEngineer?.name || '',
+                contract.personnel?.projectInspector?.name || '',
+                contract.personnel?.residentEngineer?.name || '',
+                contract.personnel?.provisionalMaterialsEngineer?.name || '',
+                contract.personnel?.provisionalMaterialsInspector?.name || '',
+                contract.personnel?.qaInCharge?.name || ''
+            ];
+
+            // Add row to worksheet
+            XLSX.utils.sheet_add_aoa(ws, [rowData], { origin: `A${rowIndex + 3}` });
+
+            // Apply cell styles to the entire row
+            for (let c = 0; c < rowData.length; c++) {
+                const cellAddress = XLSX.utils.encode_cell({ r: rowIndex + 2, c });
+                
+                if (!ws[cellAddress]) ws[cellAddress] = {};
+                
+                // Base style for all cells
+                ws[cellAddress].s = styles.dataCell;
+                
+                // Alternate row coloring
+                if ((rowIndex + 1) % 2 === 0) {
+                    Object.assign(ws[cellAddress].s, styles.evenRow);
+                }
+                
+                // Special styling for contract ID (skyblue background)
+                if (c === 0) {
+                    Object.assign(ws[cellAddress].s, styles.contractIdCell);
+                }
+                
+                // Special styling for remaining days
+                if (c === 10 && Object.keys(remainingDaysStyle).length > 0) {
+                    Object.assign(ws[cellAddress].s, remainingDaysStyle);
+                }
+                
+                // Style check marks (green)
+                if (rowData[c] === '✓') {
+                    Object.assign(ws[cellAddress].s, styles.checkMark);
+                }
+            }
+        });
+
+        // Set column widths to match the web interface
+        ws['!cols'] = [
+            { wch: 12 }, { wch: 25 }, { wch: 15 }, { wch: 20 }, 
+            { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 15 },
+            { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+            { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 12 },
+            { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 10 },
+            { wch: 10 }, { wch: 15 }, { wch: 25 }, { wch: 15 },
+            { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
+            { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+            { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 15 },
+            { wch: 15 }, { wch: 15 }, { wch: 10 }, { wch: 10 },
+            { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 },
+            { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 10 },
+            { wch: 25 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
+            { wch: 20 }, { wch: 25 }, { wch: 25 }, { wch: 25 },
+            { wch: 25 }
+        ];
+
+        // Set merged cells for grouped headers
+        ws['!merges'] = [
+            { s: { r: 0, c: 12 }, e: { r: 0, c: 13 } },  // QCP (2 columns)
+            { s: { r: 0, c: 14 }, e: { r: 0, c: 18 } },  // SWA (5 columns)
+            { s: { r: 0, c: 19 }, e: { r: 0, c: 20 } },  // CQCA (2 columns)
+            { s: { r: 0, c: 38 }, e: { r: 0, c: 39 } },  // Program of Works (2 columns)
+            { s: { r: 0, c: 40 }, e: { r: 0, c: 43 } }   // Variations (4 columns)
+        ];
+
+        // Freeze header rows and first column
+        ws['!freeze'] = { xSplit: 1, ySplit: 2, topLeftCell: "B3" };
+
+        // Add worksheet to workbook
+        XLSX.utils.book_append_sheet(wb, ws, "Contracts");
+
+        // Generate and download Excel file
+        console.log('Generating Excel file...');
+        const fileName = `Contract_Information_${new Date().toISOString().slice(0,10)}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+        console.log('Excel file downloaded successfully');
+
+    } catch (error) {
+        console.error('Error in downloadContractData:', error);
+        alert(`Failed to download contract data: ${error.message}`);
+        
+        if (error instanceof Error) {
+            console.error('Error stack:', error.stack);
+            if (error.cause) {
+                console.error('Error cause:', error.cause);
+            }
+        }
+    }
+};
+        // Edit Contract Function
+        window.editContract = function(contractId) {
+            currentEditingId = contractId;
+            
+            get(ref(database, `contracts/${contractId}`))
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const contract = snapshot.val();
+                        const personnel = contract.personnel || {};
+                        
+                        // Set all form fields with contract data
+                        for (const key in contract) {
+                            const input = document.getElementById(key);
+                            if (input) {
+                                if (input.type === "checkbox") {
+                                    input.checked = contract[key];
+                                } else {
+                                    input.value = contract[key] || '';
+                                }
+                            }
+                        }
+                        
+                        // Set personnel fields
+                        for (const key in personnel) {
+                            const input = document.getElementById(key);
+                            if (input) {
+                                input.value = personnel[key] || '';
+                            }
+                        }
+                        
+                        calculateDuration();
+                        document.querySelector("#popupForm h2").textContent = "Edit Contract";
+                        document.getElementById("contractId").readOnly = false;
+                        
+                        document.getElementById("popupForm").style.display = "block";
+                        document.getElementById("overlay").style.display = "block";
+                    } else {
+                        alert("Contract not found.");
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error fetching contract:", error);
+                    alert("Failed to fetch contract details.");
+                });
+        };
+
+        // Delete Contract Function
+        window.deleteContract = function (contractId) {
+            if (confirm("Are you sure you want to delete this contract?")) {
+                remove(ref(database, `contracts/${contractId}`))
+                    .then(() => {
+                        alert("Contract deleted successfully!");
+                        loadContracts();
+                    })
+                    .catch((error) => {
+                        console.error("Error deleting contract:", error);
+                        alert("Failed to delete contract.");
+                    });
+            }
+        };
+
+        // Save Contract Function
+        window.saveContract = function() {
+            calculateDuration();
+            
+            try {
+                const contract = {
+                    contractId: document.getElementById("contractId").value.trim(),
+                    contractName: document.getElementById("contractName").value.trim(),
+                    location: document.getElementById("location").value.trim(),
+                    appropriation: document.getElementById("appropriation").value.trim(),
+                    approvedBudgetCost: document.getElementById("approvedBudgetCost").value.trim(),
+                    contractAmount: document.getElementById("contractAmount").value.trim(),
+                    revisedContractAmount: document.getElementById("revisedContractAmount").value.trim(),
+                    contractor: document.getElementById("contractor").value.trim(),
+                    contractDuration: document.getElementById("contractDuration").value.trim(),
+                    noticeToProceed: document.getElementById('noticeToProceed').value.trim(),
+                    expiration: document.getElementById('expiration').value.trim(),   
+                    projectStatus: document.getElementById("projectStatus").value, 
+                };
+
+                if (!contract.contractId || !contract.contractName || !contract.location) {
+                    alert("Please fill in all required fields (Contract ID, Name, and Location)!");
+                    return;
+                }
+
+                if (currentEditingId) {
+                    update(ref(database, `contracts/${currentEditingId}`), contract)
+                        .then(() => {
+                            alert("Contract updated successfully!");
+                            closeForm();
+                            loadContracts();
+                        })
+                        .catch(error => {
+                            console.error("Error updating contract:", error);
+                            alert(`Failed to update contract. Error: ${error.message}`);
+                        });
+                } else {
+                    push(contractsRef, contract)
+                        .then(() => {
+                            alert("Contract added successfully!");
+                            closeForm();
+                            loadContracts();
+                        })
+                        .catch(error => {
+                            console.error("Error adding contract:", error);
+                            alert(`Failed to add contract. Error: ${error.message}`);
+                        });
+                }
+            } catch (error) {
+                console.error("Error in saveContract:", error);
+                alert(`An error occurred: ${error.message}`);
+            }
+        };
+
+        function calculateDuration() {
+            const noticeDate = document.getElementById('noticeToProceed').value;
+            const expirationDate = document.getElementById('expiration').value;
+            
+            if (noticeDate && expirationDate) {
+                const start = new Date(noticeDate);
+                const end = new Date(expirationDate);
+                
+                // Calculate difference in days
+                const diffTime = end - start;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                
+                // Update the duration field
+                document.getElementById('contractDuration').value = diffDays;
+            }
+        }
+
+        // Load Contracts Function
+        function loadContracts() {
+            onValue(contractsRef, (snapshot) => {
+                const tbody = document.querySelector("tbody");
+                tbody.innerHTML = "";  
+                document.getElementById("searchInput").value = "";
+
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    Object.keys(data).forEach((key) => {
+                        const contract = data[key];
+                        const personnel = contract.personnel || {};
+                        const row = document.createElement("tr");
+
+                        // Calculate remaining days
+                        let remainingDays = "";
+                        if (contract.expiration) {
+                            const expirationDate = new Date(contract.expiration);
+                            const currentDate = new Date();
+                            currentDate.setHours(0, 0, 0, 0);
+                            
+                            const timeDiff = expirationDate - currentDate;
+                            const diffInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                            
+                            remainingDays = diffInDays > 0 ? diffInDays : "Expired";
+                        }
+
+                        // Get all site instruction dates
+                        let siteInstructionDates = '';
+                        if (contract.siteInstructions && Object.keys(contract.siteInstructions).length > 0) {
+                            siteInstructionDates = Object.values(contract.siteInstructions)
+                                .map(instruction => instruction.date || 'No date')
+                                .join(', '); // Join with comma separator
+                        }
+
+                        // Get all time extension reports
+                        let timeExtensionReportsDisplay = '';
+                        if (contract.timeExtensionReports) {
+                            timeExtensionReportsDisplay = Object.values(contract.timeExtensionReports)
+                                .map(report => report.startDate )  
+                            .join('<br>');
+                        }
+
+                        // Get all time extension reports
+                        let timeSuspensionReportsView = '';
+                        if (contract.timeSuspensionReports) {
+                            timeSuspensionReportsView = Object.values(contract.timeSuspensionReports)
+                                .map(suspension => suspension.startDate) 
+                                .join('<br>');
+                        }
+
+                        // Get all Resumption Orders     
+                        let resumptionOrdersShow = '';
+                        if (contract.resumptionOrders) {
+                            resumptionOrdersShow = Object.values(contract.resumptionOrders)
+                                .map(resumption => resumption.date) 
+                                .join('<br>');
+                        }
+
+                        // Get all Resumption Orders     
+                        let trialMixShow = '';
+                        if (contract.trialMix) {
+                            trialMixShow= Object.values(contract.trialMix)
+                                .map(trial => trial.date) 
+                                .join('<br>');
+                        }
+
+                        row.innerHTML = `
+                            <td style="background-color: skyblue; font-size: 17px;"><a href="#" onclick="showContractDetails('${key}')">${contract.contractId}</a></td>
+                            <td >${contract.contractName}<br>${contract.location}</td>
+                            <td>${contract.appropriation || ''}</td>
+                            <td>${contract.approvedBudgetCost || ''}</td>
+                            <td>${contract.contractAmount || ''}</td>
+                            <td>${contract.revisedContractAmount || ''}</td>
+                            <td>${contract.contractor || ''}</td>
+                            <td>${contract.contractDuration || ''}</td>
+                            <td>${contract.noticeToProceed || ''}</td>
+                            <td>${contract.expiration || ''}</td>
+                            <td>${remainingDays}</td>
+                            <td>${contract.projectStatus || ''}</td>                           
+                            <td>${contract.QCPoriginal ? '<i class="fas fa-check text-green-500"></i>' : ''}</td>
+                            <td>${contract.QCPrevised ? '<i class="fas fa-check text-green-500"></i>' : ''}</td>
+                            <td>${contract.swas?.FirstBilling?.date || ''}</td>
+                            <td>${contract.swas?.SecondBilling?.date || ''}</td>
+                            <td>${contract.swas?.ThirdBilling?.date || ''}</td>
+                            <td>${contract.swas?.FourthBilling?.date || ''}</td>
+                            <td>${contract.swas?.Final?.date || ''}</td>
+                            <td>${contract.CQCAweekly ? '<i class="fas fa-check text-green-500"></i>' : ''}</td>
+                            <td>${contract.CQCAmonthly ? '<i class="fas fa-check text-green-500"></i>' : ''}</td>
+                            <td>${contract.statusTests?.percentage || ''}</td>
+                            <td>${contract.fieldLabTestStatus || ''}</td>
+                            <td>${contract.summaryFieldTest?.date || ''}</td>
+                            <td>${contract.materialsLogbook?.lastUpdated || ''}</td>
+                            
+                            <td>${contract.concretingReport?.status || ''}</td>
+                            <td>${siteInstructionDates}</td> 
+                            <td>${contract.designMix?.date || ''}</td>
+                            <td>${contract.pertcpmGantchart || ''}</td>
+                            <td>${trialMixShow}</td>
+                            <td>${contract.geotaggedPhotos || ''}</td>
+                            
+                            <td>${contract.concretePermits?.status || ''}</td>
+                            <td>${contract.acpntl?.date || ''}</td>                   
+                            <td>${contract.originalPlan ? '<i class="fas fa-check text-green-500"></i>' : ''}</td>
+                            <td>${contract.revisedPlan ? '<i class="fas fa-check text-green-500"></i>' : ''}</td>
+                            <td>${contract.asStakedPlan ? '<i class="fas fa-check text-green-500"></i>' : ''}</td>
+                            <td>${contract.asBuiltPlan ? '<i class="fas fa-check text-green-500"></i>' : ''}</td>
+                            <td>${contract.programOfWorksOriginal? '<i class="fas fa-check text-green-500"></i>' : ''}</td> 
+                            <td>${contract.programOfWorksRevised? '<i class="fas fa-check text-green-500"></i>' : ''}</td>                        
+                            <td>${contract.variationOrders?.vo1?.checked ? '<i class="fas fa-check text-green-500"></i>' : ''}</td>
+                            <td>${contract.variationOrders?.vo2?.checked ? '<i class="fas fa-check text-green-500"></i>' : ''}</td>
+                            <td>${contract.variationOrders?.vo3?.checked ? '<i class="fas fa-check text-green-500"></i>' : ''}</td>
+                            <td>${contract.variationOrders?.vo4?.checked ? '<i class="fas fa-check text-green-500"></i>' : ''}</td>
+                            <td>${timeSuspensionReportsView}</td>
+                            <td>${timeExtensionReportsDisplay}</td>
+                            <td>${resumptionOrdersShow}</td>
+                            <td>${contract.pdo?.status|| ''}</td> 
+                            <!-- Personnel Columns -->
+                            <td>${contract.personnel?.contractorsMaterialsEngineer?.name || ''}</td>
+                            <td>${contract.personnel?.projectEngineer?.name || ''}</td>
+                            <td>${contract.personnel?.materialsEngineer?.name || ''}</td>
+                            <td>${contract.personnel?.projectInspector?.name || ''}</td>
+                            <td>${contract.personnel?.residentEngineer?.name || ''}</td>
+                            <td>${contract.personnel?.provisionalMaterialsEngineer?.name || ''}</td>
+                            <td>${contract.personnel?.provisionalMaterialsInspector?.name || ''}</td>
+                            <td>${contract.personnel?.qaInCharge?.name || ''}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-btn edit-btn" onclick="editContract('${key}')" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="action-btn delete-btn" onclick="deleteContract('${key}')" title="Delete">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        `;
+
+                        tbody.appendChild(row);
+                    });
+                }
+            });
+        }
+
+        window.searchContract = function() {
+            const searchInput = document.getElementById("searchInput").value.toLowerCase();
+            const table = document.querySelector("tbody");
+            const rows = table.getElementsByTagName("tr");
+
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName("td");
+                let shouldShow = false;
+                
+                // Check each cell in the row (except the last one which contains action buttons)
+                for (let j = 0; j < cells.length - 1; j++) {
+                    const cellText = cells[j].textContent || cells[j].innerText;
+                    if (cellText.toLowerCase().includes(searchInput)) {
+                        shouldShow = true;
+                        break; // No need to check other cells if we found a match
+                    }
+                }
+                
+                rows[i].style.display = shouldShow ? "" : "none";
+            }
+        };
+
+        // Updated showContractDetails function
+        window.showContractDetails = function (contractId) {
+            closeForm(); // Close the add/edit form if open
+            
+            const contractDetailsPopup = document.getElementById("contractDetailsPopup");
+            const contractDetailsContent = document.getElementById("contractDetailsContent");
+            const overlay = document.getElementById("overlay");
+
+            // Get the contract details from Firebase
+            get(ref(database, `contracts/${contractId}`))
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const contract = snapshot.val();
+                        const personnel = contract.personnel || {};
+                        const swas = contract.swas || {};
+                        const variationOrders = contract.variationOrders || {};
+
+                        // Calculate remaining days and status indicator
+                        let remainingDays = "N/A";
+                        let statusIndicator = "";
+                        if (contract.expiration) {
+                            const expirationDate = new Date(contract.expiration);
+                            const currentDate = new Date();
+                            currentDate.setHours(0, 0, 0, 0);
+                            
+                            const timeDiff = expirationDate - currentDate;
+                            const diffInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                            
+                            if (diffInDays > 0) {
+                                remainingDays = diffInDays;
+                                if (diffInDays <= 1) {
+                                    statusIndicator = '<span class="status-indicator status-danger"></span>';
+                                } else if (diffInDays <= 3) {
+                                    statusIndicator = '<span class="status-indicator status-warning"></span>';
+                                } else {
+                                    statusIndicator = '<span class="status-indicator status-active"></span>';
+                                }
+                            } else {
+                                remainingDays = "Expired";
+                                statusIndicator = '<span class="status-indicator status-danger"></span>';
+                            }
+                        }
+
+                        // Format site instructions if they exist
+                        let siteInstructionsDisplay = "N/A";
+                        if (contract.siteInstructions && Object.keys(contract.siteInstructions).length > 0) {
+                            siteInstructionsDisplay = Object.values(contract.siteInstructions)
+                                .map(instruction => instruction.date || 'No date')
+                                .join('<br>');
+                        }
+
+                        // Format time extension reports if they exist
+                        let timeExtensionReportsDisplay = "N/A";
+                        if (contract.timeExtensionReports) {
+                            timeExtensionReportsDisplay = Object.values(contract.timeExtensionReports)
+                                .map(report => report.startDate)  
+                                .join('<br>');
+                        }
+
+                        // Format time suspension reports if they exist
+                        let timeSuspensionReportsView = "N/A";
+                        if (contract.timeSuspensionReports) {
+                            timeSuspensionReportsView = Object.values(contract.timeSuspensionReports)
+                                .map(suspension => suspension.startDate) 
+                                .join('<br>');
+                        }
+
+                        // Format resumption orders if they exist
+                        let resumptionOrdersShow = "N/A";
+                        if (contract.resumptionOrders) {
+                            resumptionOrdersShow = Object.values(contract.resumptionOrders)
+                                .map(resumption => resumption.date) 
+                                .join('<br>');
+                        }
+
+                        
+
+                        // Create the Excel-like details view
+                        contractDetailsContent.innerHTML = `
+                            <div class="contract-details-header">
+                                <h2>Contract Details - ${contract.contractId || 'N/A'}</h2>
+                                <div>${statusIndicator} ${remainingDays} days remaining</div>
+                            </div>
+
+                            <div class="contract-details-grid">
+                                <!-- Basic Information Section -->
+                                <div class="contract-details-section">
+                                    <div class="section-header">
+                                        <span>Basic Information</span>
+                                    </div>
+                                    <div class="section-content">
+                                        <div class="detail-row">
+                                            <div class="detail-label">Contract Name:</div>
+                                            <div class="detail-value">${contract.contractName || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Location:</div>
+                                            <div class="detail-value">${contract.location || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Appropriation:</div>
+                                            <div class="detail-value">${contract.appropriation || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Approved Budget Cost:</div>
+                                            <div class="detail-value">${contract.approvedBudgetCost || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Contract Amount:</div>
+                                            <div class="detail-value">${contract.contractAmount || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Revised Contract Amount:</div>
+                                            <div class="detail-value">${contract.revisedContractAmount || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Contractor:</div>
+                                            <div class="detail-value">${contract.contractor || 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Dates Section -->
+                                <div class="contract-details-section">
+                                    <div class="section-header">
+                                        <span>Dates & Duration</span>
+                                    </div>
+                                    <div class="section-content">
+                                        <div class="detail-row">
+                                            <div class="detail-label">Contract Duration:</div>
+                                            <div class="detail-value">${contract.contractDuration || 'N/A'} days</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Notice to Proceed:</div>
+                                            <div class="detail-value">${contract.noticeToProceed || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Expiration Date:</div>
+                                            <div class="detail-value">${contract.expiration || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Project Status:</div>
+                                            <div class="detail-value">${contract.projectStatus || 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Quality Control Section -->
+                                <div class="contract-details-section">
+                                    <div class="section-header">
+                                        <span>Quality Control</span>
+                                    </div>
+                                    <div class="section-content">
+                                        <div class="detail-row">
+                                            <div class="detail-label">QCP Original:</div>
+                                            <div class="detail-value">${contract.QCPoriginal ? '<span class="check-mark">✓</span>' : 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">QCP Revised:</div>
+                                            <div class="detail-value">${contract.QCPrevised ? '<span class="check-mark">✓</span>' : 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">CQCA Weekly:</div>
+                                            <div class="detail-value">${contract.CQCAweekly ? '<span class="check-mark">✓</span>' : 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">CQCA Monthly:</div>
+                                            <div class="detail-value">${contract.CQCAmonthly ? '<span class="check-mark">✓</span>' : 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- SWA Billings Section -->
+                                <div class="contract-details-section">
+                                    <div class="section-header" style="background-color: #28a745; color: white;">
+                                        <span>SWA Billings</span>
+                                    </div>
+                                    <div class="section-content">
+                                        <div class="detail-row">
+                                            <div class="detail-label">1st Billing:</div>
+                                            <div class="detail-value">${swas.FirstBilling?.date || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">2nd Billing:</div>
+                                            <div class="detail-value">${swas.SecondBilling?.date || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">3rd Billing:</div>
+                                            <div class="detail-value">${swas.ThirdBilling?.date || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">4th Billing:</div>
+                                            <div class="detail-value">${swas.FourthBilling?.date || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Final Billing:</div>
+                                            <div class="detail-value">${swas.Final?.date || 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tests Section -->
+                                <div class="contract-details-section">
+                                    <div class="section-header">
+                                        <span>Tests & Reports</span>
+                                    </div>
+                                    <div class="section-content">
+                                        <div class="detail-row">
+                                            <div class="detail-label">Status of Test:</div>
+                                            <div class="detail-value">${contract.statusTests?.percentage || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Field & Lab Test Status:</div>
+                                            <div class="detail-value">${contract.fieldLabTestStatus || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Summary of Field Test:</div>
+                                            <div class="detail-value">${contract.summaryFieldTest?.date || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Materials Logbook:</div>
+                                            <div class="detail-value">${contract.materialsLogbook?.lastUpdated || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Report on Concrete Works:</div>
+                                            <div class="detail-value">${contract.concretingReport?.status || 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                               
+
+                                <!-- Plans Section -->
+                                <div class="contract-details-section">
+                                    <div class="section-header">
+                                        <span>Plans</span>
+                                    </div>
+                                    <div class="section-content">
+                                        <div class="detail-row">
+                                            <div class="detail-label">Original Plan:</div>
+                                            <div class="detail-value">${contract.originalPlan ? '<span class="check-mark">✓</span>' : 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Revised Plan:</div>
+                                            <div class="detail-value">${contract.revisedPlan ? '<span class="check-mark">✓</span>' : 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">As Staked Plan:</div>
+                                            <div class="detail-value">${contract.asStakedPlan ? '<span class="check-mark">✓</span>' : 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">As-Built Plan:</div>
+                                            <div class="detail-value">${contract.asBuiltPlan ? '<span class="check-mark">✓</span>' : 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Program of Works Section -->
+                                <div class="contract-details-section">
+                                    <div class="section-header" style="background-color: #948f4b; color: white;">
+                                        <span>Program of Works</span>
+                                    </div>
+                                    <div class="section-content">
+                                        <div class="detail-row">
+                                            <div class="detail-label">Original:</div>
+                                            <div class="detail-value">${contract.programOfWorksOriginal ? '<span class="check-mark">✓</span>' : 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Revised:</div>
+                                            <div class="detail-value">${contract.programOfWorksRevised ? '<span class="check-mark">✓</span>' : 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Variations Section -->
+                                <div class="contract-details-section">
+                                    <div class="section-header" style="background-color: #15b182; color: white;">
+                                        <span>Variations</span>
+                                    </div>
+                                    <div class="section-content">
+                                        <div class="detail-row">
+                                            <div class="detail-label">V.O.1:</div>
+                                            <div class="detail-value">${variationOrders.vo1?.checked ? '<span class="check-mark">✓</span>' : 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">V.O.2:</div>
+                                            <div class="detail-value">${variationOrders.vo2?.checked ? '<span class="check-mark">✓</span>' : 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">V.O.3:</div>
+                                            <div class="detail-value">${variationOrders.vo3?.checked ? '<span class="check-mark">✓</span>' : 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">V.O.4:</div>
+                                            <div class="detail-value">${variationOrders.vo4?.checked ? '<span class="check-mark">✓</span>' : 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Time Management Section -->
+                                <div class="contract-details-section">
+                                    <div class="section-header">
+                                        <span>Time Management</span>
+                                    </div>
+                                    <div class="section-content">
+                                        <div class="detail-row">
+                                            <div class="detail-label">Time Suspension Reports:</div>
+                                            <div class="detail-value">${timeSuspensionReportsView}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Time Extension Reports:</div>
+                                            <div class="detail-value">${timeExtensionReportsDisplay}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Resumption Orders:</div>
+                                            <div class="detail-value">${resumptionOrdersShow}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">PDO:</div>
+                                            <div class="detail-value">${contract.pdo?.status || 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Personnel Section -->
+                                <div class="contract-details-section">
+                                    <div class="section-header">
+                                        <span>Personnel</span>
+                                    </div>
+                                    <div class="section-content">
+                                        <div class="detail-row">
+                                            <div class="detail-label">Contractor's Materials Engineer:</div>
+                                            <div class="detail-value">${personnel.contractorsMaterialsEngineer?.name || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Project Engineer:</div>
+                                            <div class="detail-value">${personnel.projectEngineer?.name || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Materials Engineer:</div>
+                                            <div class="detail-value">${personnel.materialsEngineer?.name || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Project Inspector:</div>
+                                            <div class="detail-value">${personnel.projectInspector?.name || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Resident Engineer:</div>
+                                            <div class="detail-value">${personnel.residentEngineer?.name || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Provisional Materials Engineer:</div>
+                                            <div class="detail-value">${personnel.provisionalMaterialsEngineer?.name || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Provisional Materials Inspector:</div>
+                                            <div class="detail-value">${personnel.provisionalMaterialsInspector?.name || 'N/A'}</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">QA In-Charge:</div>
+                                            <div class="detail-value">${personnel.qaInCharge?.name || 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="close-details-btn" onclick="closeContractDetails()">
+                                <i class="fas fa-times"></i> Close
+                            </button>
+                        `;
+
+                        contractDetailsPopup.style.display = "block";
+                        overlay.style.display = "block";
+                    } else {
+                        alert("Contract details not found.");
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error fetching contract details:", error);
+                    alert("Failed to load contract details.");
+                });
+        };
+
+        window.closeContractDetails = function () {
+            document.getElementById("contractDetailsPopup").style.display = "none";
+            document.getElementById("overlay").style.display = "none";
+        };
+
+        // Notification Functions
+        function showNotification(message) {
+            const notificationPopup = document.getElementById("notificationPopup");
+            const notificationMessage = document.getElementById("notificationMessage");
+            const notificationSound = document.getElementById("notificationSound");
+            
+            notificationMessage.textContent = message;
+            notificationPopup.style.display = "block";
+            
+            // Play notification sound (loop until dismissed)
+            notificationSound.currentTime = 0;
+            notificationSound.loop = true;
+            notificationSound.play().catch(e => console.log("Audio play failed:", e));
+        }
+
+        window.closeNotification = function() {
+            const notificationPopup = document.getElementById("notificationPopup");
+            const notificationSound = document.getElementById("notificationSound");
+            
+            notificationPopup.style.display = "none";
+            notificationSound.pause();
+            notificationSound.currentTime = 0;
+        };
+
+        // Logout function
+        function logoutUser() {
+            const auth = getAuth();
+            signOut(auth).then(() => {
+                // Sign-out successful
+                window.location.href = "index.html"; // Redirect to login page
+            }).catch((error) => {
+                // An error happened
+                console.error("Logout error:", error);
+                alert("Failed to logout. Please try again.");
+            });
+        }
+
+        // Add event listeners when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the logout button
+            const logoutBtn = document.querySelector('.logout-btn');
+            
+            // Add click event listener
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', logoutUser);
+            }
+            
+            // Add overlay click handler
+            document.getElementById("overlay").addEventListener("click", function() {
+                closeForm();
+                closeContractDetails();
+            });
+
+            // Prevent clicks inside popups from closing them
+            document.querySelectorAll('.popup-form, .contract-details-container').forEach(popup => {
+                popup.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+
+            // Initialize the page
+            loadContracts();
+            loadUsers();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,2453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FDT</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+body {
+    display: flex;
+    height: 100vh;
+    background-color: #f2f2f2;
+}
+.sidebar {
+    width: 250px;
+    background-color: #1c1c64;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    position: fixed;
+    height: 100%;
+    top: 0;
+    bottom: 0;
+    justify-content: space-between;
+}
+.sidebar h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 0 10px;
+    font-size: 25px;
+}
+.menu {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0 10px;
+    gap: 10px;
+}
+.menu a, .dropdown-btn {
+    color: white;
+    text-decoration: none;
+    padding: 15px;
+    cursor: pointer;
+    font-size: 18px;
+    border-radius: 10px;
+    background-color: #1c1c64;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+.menu a:hover, .dropdown-btn:hover {
+    background-color: #da471f;
+}
+.logout-container {
+    padding: 0 20px 20px;
+}
+.logout-btn {
+    margin-top: auto;
+    padding: 12px;
+    background-color: #ff5c33;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin: 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+.logout-btn:hover {
+    background-color: #e04a22;
+}
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+    flex-grow: 1;
+    height: 100%;
+    overflow: auto;
+}
+.dashboard-title {
+    font-weight: bold;
+    font-size: 30px;
+    margin-bottom: 20px;
+}
+.search-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 20px;
+    gap: 20px;
+    flex-wrap: nowrap;
+}
+.search-container input {
+    flex: 1;
+    max-width: 300px;
+    padding: 12px 16px;
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    outline: none;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.search-container input:focus {
+    border-color: #da471f;
+    box-shadow: 0 0 5px rgba(218, 71, 31, 0.3);
+}
+.add-btn {
+    background-color: #da471f;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 30px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    flex-shrink: 0;
+}
+.add-btn:hover {
+    background-color: #c03d1b;
+}
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.search-box .search-icon {
+    position: absolute;
+    left: 20px;
+    color: #999;
+    font-size: 16px;
+    pointer-events: none;
+}
+.search-box input {
+    padding-left: 40px;
+}
+.logo {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 120px;
+    height: auto;
+    border-radius: 50%;
+}
+#contractButtonsContainer {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    height: 600px;
+    overflow: hidden;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+#buttonsSection {
+    width: 200px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#dataDisplaySection {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#tableSection {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+#tableSection h3 {
+    margin-bottom: 10px;
+    color: #1c1c64;
+}
+
+#fdtTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#fdtTable th {
+    background: #1c1c64;
+    color: white;
+    padding: 10px;
+    text-align: left;
+}
+
+#fdtTable td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+#fdtTable tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.show-gantt-btn {
+    background-color: #1c1c64;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.show-gantt-btn:hover {
+    background-color: #2a2a8a;
+}
+
+.contract-id-btn {
+    background-color: #1c1c64;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease;
+    min-width: 150px;
+    text-align: center;
+}
+.contract-id-btn:hover {
+    background-color: #da471f;
+}
+
+.action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin: 0 2px;
+    transition: background-color 0.3s;
+}
+
+.edit-btn {
+    background-color: #1c1c64;
+    color: white;
+}
+
+.edit-btn:hover {
+    background-color: #2a2a8a;
+}
+
+.delete-btn {
+    background-color: #da471f;
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #c03d1b;
+}
+
+#contractIdHeader {
+    color: #da471f;
+    font-weight: bold;
+}
+
+.gantt-container {
+    border: 1px solid #ccc;
+    padding: 10px;
+    position: relative;
+    height: 350px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.gantt-content {
+    flex: 1;
+    overflow-y: hidden;
+    overflow-x: auto;
+    height: 100%;
+}
+
+.gantt-grid {
+    display: flex;
+    flex-direction: column;
+    min-height: min-content;
+}
+
+.gantt-grid-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+    
+.gantt-sidebar {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: white;
+    border-right: 1px solid #ddd;
+    min-width: 200px;
+    max-width: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex-shrink: 0;
+    height: 100%;
+}
+
+.gantt-sidebar-item {
+    padding: 2px 8px;
+    border-bottom: 1px solid #eee;
+    min-height: 24px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.gantt-sidebar-label {
+    font-weight: bold;
+    color: #1c1c64;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 80px;
+    flex-shrink: 0;
+    font-size: 12px;
+}
+
+.gantt-sidebar-desc {
+    font-size: 10px;
+    color: #666;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-grow: 1;
+}
+
+.gantt-header-info {
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.gantt-header-info-label {
+    font-weight: bold;
+    color: #1c1c64;
+    font-size: 14px;
+}
+
+.gantt-header-info-item {
+    margin-bottom: 5px;
+}
+
+.gantt-sidebar-value {
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+
+.gantt-header-info-value {
+    font-size: 15px;
+}
+
+.contract-info-container {
+    margin-top: 20px;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 5px;
+}
+
+.contract-info-title {
+    font-weight: bold;
+    color: #1c1c64;
+    margin-bottom: 5px;
+}
+
+.contract-info-item {
+    margin-bottom: 3px;
+    font-size: 14px;
+}
+
+.gantt-header {
+    display: flex;
+    flex-direction: column;
+    margin-left: 200px;
+}
+
+.gantt-header-container {
+    overflow-x: hidden;
+    overflow-y: hidden;
+    margin-left: 200px;
+    background: white;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    border-bottom: 1px solid #ddd;
+    flex-shrink: 0;
+}
+
+.month-row, .day-row {
+    display: flex;
+    height: 24px;
+    min-width: max-content;
+}
+
+.month-cell, .day-cell {
+    border-right: 1px solid #eee;
+    text-align: center;
+    box-sizing: border-box;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    min-width: 24px;
+}
+
+.month-cell {
+    font-weight: bold;
+    background-color: #f5f5f5;
+    line-height: 24px;
+}
+
+.day-cell {
+    font-size: 10px;
+    line-height: 24px;
+}
+
+.day-cell.weekend {
+    background-color: #f8f8f8;
+}
+
+.timeline, .task-row {
+    display: flex;
+}
+
+.task-label {
+    min-width: 150px;
+    max-width: 150px;
+    text-align: left;
+    font-weight: bold;
+    padding: 0 5px;
+    line-height: 24px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.task-label-header {
+    min-width: 150px;
+    max-width: 150px;
+    text-align: left;
+    font-weight: bold;
+    padding: 0 5px;
+    line-height: 24px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: #1c1c64;
+    color: white;
+    border-right: 1px solid #ddd;
+}
+
+.task-label-details {
+    display: none;
+}
+
+.task-cell {
+    width: 24px;
+    min-width: 24px;
+    height: 24px;
+    border-right: 1px solid #eee;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.task-cell .date-of-work {
+    background-color: #da471f;
+    height: 12px;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.task-cell .date-of-test {
+    background-color: #44f;
+    height: 12px;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+.task-row {
+    display: flex;
+    height: 24px;
+    min-width: max-content;
+    border-bottom: 1px solid #eee;
+}
+
+.date-of-work {
+    background-color: #da471f;
+    height: 12px;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+    
+.date-of-test {
+    background-color: #1c1c64;
+    height: 12px;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+.gantt-legend {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 10px;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+}
+
+.legend-color {
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+    border-radius: 3px;
+}
+
+.day-of-week-row {
+    display: flex;
+    height: 18px;
+    min-width: max-content;
+    font-size: 10px;
+    font-weight: bold;
+    border-bottom: 2px solid #eee;
+    background-color: navy;
+}
+        
+.day-of-week-cell {
+    width: 24px;
+    min-width: 24px;
+    text-align: center;
+    border-right: 2px solid #eee;
+    margin-top: 4px;
+    color: white;
+}
+        
+.day-of-week-cell.weekend {
+    color:red;
+    margin-top: 4px;
+}
+
+/* Gantt Modal Styles */
+.gantt-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.gantt-modal-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 1200px;
+    max-height: 90vh;
+    overflow: auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 1000; 
+}
+
+.gantt-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.gantt-modal-title {
+    font-size: 24px;
+    color: #1c1c64;
+    margin: 0;
+}
+
+.gantt-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.gantt-modal-close:hover {
+    color: #da471f;
+}
+
+.gantt-modal-details {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.gantt-modal-details p {
+    margin: 5px 0;
+    font-size: 16px;
+}
+
+.gantt-modal-details strong {
+    color: #1c1c64;
+}
+
+.download-btn {
+    position: absolute;
+    top: 30px;
+    right: 80px;
+    background-color: #1c1c64;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    z-index: 1001;
+    pointer-events: auto !important;
+}
+
+.download-btn:hover {
+    background-color: #2a2a8a;
+}
+
+/* Notification Styles */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.notification-icon {
+    position: relative;
+    background-color: #1c1c64;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #da471f;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.notification-dropdown {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    width: 350px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    max-height: 500px;
+   
+    display: none;
+}
+
+.notification-dropdown.show {
+    display: block;
+}
+
+.notification-header {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    font-weight: bold;
+    color: #1c1c64;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #999;
+}
+
+.notification-item {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+    background-color: #f9f9f9;
+}
+
+.notification-item-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.notification-item-message {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.notification-item-date {
+    color: #999;
+    font-size: 12px;
+    text-align: right;
+}
+
+.notification-item.urgent {
+    border-left: 4px solid #da471f;
+}
+
+.notification-item.warning {
+    border-left: 4px solid #ffcc00;
+}
+
+.notification-item.info {
+    border-left: 4px solid #1c1c64;
+}
+
+.notification-item.expired {
+    border-left: 4px solid #ff0000;
+}
+
+.notification-item.accomplished {
+    border-left: 4px solid #4CAF50;
+}
+
+.clear-notifications {
+    color: #da471f;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.notification-tabs {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 10px;
+}
+
+.notification-tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    background: #f5f5f5;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-weight: bold;
+    color: #1c1c64;
+}
+
+.notification-tab.active {
+    border-bottom: 2px solid #da471f;
+    background: white;
+}
+
+.notification-tab-content {
+    max-height: 400px;
+    overflow-y: auto;
+}
+    </style>
+</head>
+<body>
+
+   
+    <!-- Notification Sound -->
+    <audio id="notificationSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Notification Icon -->
+    <div class="notification-container">
+        <div class="notification-icon" onclick="toggleNotifications()">
+            <i class="fas fa-bell"></i>
+            <span class="notification-badge" id="notificationCount">0</span>
+        </div>
+        <div class="notification-dropdown" id="notificationDropdown">
+            <div class="notification-header">
+                Notifications
+                <span class="clear-notifications" onclick="clearNotifications()">Clear All</span>
+            </div>
+            <div id="notificationList">
+                <!-- Notification items will be added here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div>
+            <h3>QUALITY<br>ASSURANCE<br>SECTION</h3>
+            <div class="menu">
+                <a href="admin_dashboard.html">Dashboard</a>
+                <a href="user_list.html">Users</a>
+                <a href="info.html">Contract Information</a>
+                <a href="files.html">Files</a>
+                <a href="FDT.html">FDT Scheduler</a>
+                 <a href="others.html">Others</a>
+            </div>
+        </div>
+        <button class="logout-btn">LOG OUT</button>
+    </div>
+
+    <div class="main-content">
+        <div class="dashboard-title">FDT SCHEDULER</div>
+    
+        <div id="contractButtonsContainer">
+            <div id="buttonsSection">
+                <!-- Contract buttons will go here -->
+            </div>
+            <div id="dataDisplaySection">
+                <div id="tableSection">
+                    <h3>FDT Records for Contract: <span id="contractIdHeader"></span></h3>
+                    <table id="fdtTable" border="1">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                                <th>Unit</th>
+                                <th>Date of Work</th>
+                                <th>Date of Test</th>
+                                <th>Test Type</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <button id="showGanttBtn" class="show-gantt-btn" style="display: none;">
+                        <i class="fas fa-chart-bar"></i> Show Gantt Chart
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FDT Form Modal -->
+    <div id="fdtModal" style="
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); justify-content: center; align-items: center;
+    z-index: 999;">
+
+    <div style="
+        background: #fff; padding: 30px; border-radius: 20px; width: 500px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3); position: relative;
+        max-height: 90vh; overflow-y: auto;">
+
+        <h2 style="margin-bottom: 20px; color: #1c1c64; text-align: center;">FDT Form</h2>
+        
+        <form id="fdtForm" style="display: flex; flex-direction: column; gap: 15px;">
+            <input type="hidden" id="currentContractId" />
+            <input type="hidden" id="itemUid" />
+
+            <div style="display: flex; flex-direction: column;">
+                <label for="item" style="font-weight: bold;">Item</label>
+                <input type="text" id="item" required style="padding: 10px; border-radius: 10px; border: 1px solid #ccc;">
+            </div>
+
+            <div style="display: flex; flex-direction: column;">
+                <label for="description" style="font-weight: bold;">Description</label>
+                <input type="text" id="description" required style="padding: 10px; border-radius: 10px; border: 1px solid #ccc;">
+            </div>
+
+            <div style="display: flex; flex-direction: column;">
+                <label for="quantity" style="font-weight: bold;">Quantity</label>
+                <input type="number" id="quantity" required style="padding: 10px; border-radius: 10px; border: 1px solid #ccc;">
+            </div>
+
+            <div style="display: flex; flex-direction: column;">
+                <label for="unit" style="font-weight: bold;">Unit</label>
+                <input type="text" id="unit" required style="padding: 10px; border-radius: 10px; border: 1px solid #ccc;">
+            </div>
+
+            <div style="display: flex; flex-direction: column;">
+                <label for="testType" style="font-weight: bold;">Test Type</label>
+                <select id="testType" required style="padding: 10px; border-radius: 10px; border: 1px solid #ccc;">
+                    <option value="">Select Test Type</option>
+                    <option value="D">D</option>
+                    
+                </select>
+            </div>
+
+            <div id="dateOfWorkContainer">
+                <label style="font-weight: bold;">Date of Work</label>
+                <input type="date" name="dateOfWork[]" class="dateOfWorkInput" style="padding: 10px; border-radius: 10px; border: 1px solid #ccc;"><br>
+            </div>
+            <button type="button" onclick="addDateField('dateOfWorkContainer', 'dateOfWorkInput')" style="
+                background-color: #1c1c64; color: white; padding: 8px 12px;
+                border: none; border-radius: 20px; cursor: pointer; font-size: 14px;
+                margin-bottom: 10px;">+ Add Date of Work</button>
+
+            <div id="dateOfTestContainer">
+                <label style="font-weight: bold;">Date of Test</label>
+                <input type="date" name="dateOfTest[]" class="dateOfTestInput" style="padding: 10px; border-radius: 10px; border: 1px solid #ccc;"><br>
+            </div>
+            <button type="button" onclick="addDateField('dateOfTestContainer', 'dateOfTestInput')" style="
+                background-color: #1c1c64; color: white; padding: 8px 12px;
+                border: none; border-radius: 20px; cursor: pointer; font-size: 14px;
+                margin-bottom: 10px;">+ Add Date of Test</button>
+
+            <div style="display: flex; justify-content: space-between; gap: 10px;">
+                <button type="submit" style="
+                    background-color: #da471f; color: white; padding: 12px;
+                    border: none; border-radius: 10px; cursor: pointer; flex: 1; font-size: 16px;">Save</button>
+                <button type="button" onclick="closeModal()" style="
+                    background-color: #ccc; color: #333; padding: 12px;
+                    border: none; border-radius: 10px; cursor: pointer; flex: 1; font-size: 16px;">Cancel</button>
+            </div>
+        </form>
+    </div>
+    </div>
+
+    <!-- Gantt Chart Modal -->
+    <div id="ganttModal" class="gantt-modal">
+        <div class="gantt-modal-content">
+            <div class="gantt-modal-header">
+                <h2 class="gantt-modal-title">Gantt Chart</h2>
+                <button class="gantt-modal-close" onclick="closeGanttModal()">&times;</button>
+            </div>
+            
+            <div id="ganttContractInfo" class="gantt-header-info">
+                <!-- Contract information will be inserted here -->
+            </div>
+            
+           
+<button class="download-btn" onclick="exportGanttToPDF()">
+    <i class="fas fa-download"></i> Export to PDF
+</button>
+
+<!-- Replace the existing month/year select section with this -->
+<div style="position: absolute; top: 30px; right: 200px; z-index: 1001; display: flex; gap: 10px; margin-right: 25px;">
+    <select id="monthSelect" style="padding: 8px 15px; border-radius: 5px;" onchange="filterGanttChart()">
+        <option value="all">All Months</option>
+        <option value="0">January</option>
+        <option value="1">February</option>
+        <option value="2">March</option>
+        <option value="3">April</option>
+        <option value="4">May</option>
+        <option value="5">June</option>
+        <option value="6">July</option>
+        <option value="7">August</option>
+        <option value="8">September</option>
+        <option value="9">October</option>
+        <option value="10">November</option>
+        <option value="11">December</option>
+    </select>
+    <select id="yearSelect" style="padding: 8px 15px; border-radius: 5px;" onchange="filterGanttChart()">
+        <!-- Years will be populated dynamically -->
+    </select>
+</div>
+            
+            <div class="gantt-legend">
+                <div class="legend-item">
+                    <span class="legend-color" style="background-color: #da471f;"></span>
+                    <span>Date of Work</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background-color:  #44f;"></span>
+                    <span>Date of Test</span>
+                </div>
+            </div>
+
+            <div class="gantt-container">
+                <div class="gantt-header-container" id="headerScroll">
+                    <div id="ganttHeader">
+                        <!-- Year, month, and day rows will be inserted here -->
+                    </div>
+                </div>
+                
+                <div class="gantt-grid-container">
+                    <div class="gantt-sidebar">
+                        <div id="ganttTaskLabels">
+                            <!-- Task labels will be inserted here -->
+                        </div>
+                    </div>
+                    
+                    <div class="gantt-content" id="contentScroll">
+                        <div id="ganttGrid">
+                            <!-- Task rows will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accomplishment Form Modal -->
+    <div id="accomplishmentModal" style="
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); justify-content: center; align-items: center;
+        z-index: 1001;">
+        <div style="
+            background: #fff; padding: 30px; border-radius: 20px; width: 400px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); position: relative;">
+            <h2 style="margin-bottom: 20px; color: #1c1c64; text-align: center;">Mark Test as Accomplished</h2>
+            
+            <form id="accomplishmentForm">
+                <input type="hidden" id="accomplishmentContractId">
+                <input type="hidden" id="accomplishmentItemId">
+                <input type="hidden" id="accomplishmentTestDate">
+                
+                <div style="margin-bottom: 20px;">
+                    <p>Was this test completed?</p>
+                    <label style="display: block; margin: 10px 0;">
+                        <input type="radio" name="accomplished" value="yes" style="margin-right: 10px;">
+                        Yes, test was completed
+                    </label>
+                    <label style="display: block; margin: 10px 0;">
+                        <input type="radio" name="accomplished" value="no" style="margin-right: 10px;">
+                        No, test was not completed
+                    </label>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; gap: 10px;">
+                    <button type="submit" style="
+                        background-color: #da471f; color: white; padding: 12px;
+                        border: none; border-radius: 10px; cursor: pointer; flex: 1; font-size: 16px;">Save</button>
+                    <button type="button" onclick="closeAccomplishmentModal()" style="
+                        background-color: #ccc; color: #333; padding: 12px;
+                        border: none; border-radius: 10px; cursor: pointer; flex: 1; font-size: 16px;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuxUQaXiWorKsz1wlpCmho2u9OQq2bAnE",
+            authDomain: "qas-section.firebaseapp.com",
+            databaseURL: "https://qas-section-default-rtdb.firebaseio.com",
+            projectId: "qas-section",
+            storageBucket: "qas-section.appspot.com",
+            messagingSenderId: "76857155340",
+            appId: "1:76857155340:web:8b497e036eb55c33607329"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Current Gantt data for export
+        let currentGanttData = null;
+        let currentContractDetails = null;
+        let notificationInterval = null;
+
+        
+        // Generate a unique ID
+        function generateUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function fetchContracts() {
+            const container = document.getElementById('buttonsSection');
+            container.innerHTML = '';
+
+            const contractsRef = db.ref('contracts');
+
+            contractsRef.once('value', (snapshot) => {
+                snapshot.forEach(childSnapshot => {
+                    const contract = childSnapshot.val();
+                    const contractId = contract.contractId || 'No ID';
+
+                    const btn = document.createElement('button');
+                    btn.textContent = contractId;
+                    btn.className = 'contract-id-btn';
+
+                    btn.onclick = () => {
+                        openModal(contractId);
+                    };
+
+                    container.appendChild(btn);
+                });
+            });
+        }
+
+        
+        
+
+        function searchContract() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const buttons = document.querySelectorAll('.contract-id-btn');
+            buttons.forEach(btn => {
+                const match = btn.textContent.toLowerCase().includes(input);
+                btn.style.display = match ? 'inline-block' : 'none';
+            });
+        }
+
+        window.onload = function() {
+            fetchContracts();
+            checkTestDates();
+            // Check for upcoming tests every hour
+            notificationInterval = setInterval(checkTestDates, 3600000);
+        };
+
+        // MODAL FUNCTIONS
+        function openModal(contractId) {
+            document.getElementById('currentContractId').value = contractId;
+            document.getElementById('fdtModal').style.display = 'flex';
+            document.getElementById('contractIdHeader').textContent = contractId;
+            document.getElementById('itemUid').value = generateUID();
+            loadFDTTable(contractId);
+        }
+
+        function closeModal() {
+            document.getElementById('fdtForm').reset();
+            document.getElementById('fdtForm').removeAttribute('data-record-id');
+            document.getElementById('fdtModal').style.display = 'none';
+            document.getElementById('dateOfWorkContainer').innerHTML = '<label style="font-weight: bold;">Date of Work</label><input type="date" name="dateOfWork[]" class="dateOfWorkInput" style="padding: 10px; border-radius: 10px; border: 1px solid #ccc;"><br>';
+            document.getElementById('dateOfTestContainer').innerHTML = '<label style="font-weight: bold;">Date of Test</label><input type="date" name="dateOfTest[]" class="dateOfTestInput" style="padding: 10px; border-radius: 10px; border: 1px solid #ccc;"><br>';
+            document.getElementById('itemUid').value = generateUID();
+        }
+
+        function addDateField(containerId, className) {
+            const container = document.getElementById(containerId);
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.name = containerId.includes('Work') ? 'dateOfWork[]' : 'dateOfTest[]';
+            input.classList.add(className);
+            input.style.padding = '10px';
+            input.style.borderRadius = '10px';
+            input.style.border = '1px solid #ccc';
+            container.appendChild(input);
+            container.appendChild(document.createElement('br'));
+        }
+
+        function addDateFieldWithValue(containerId, className, value) {
+            const container = document.getElementById(containerId);
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.name = containerId.includes('Work') ? 'dateOfWork[]' : 'dateOfTest[]';
+            input.classList.add(className);
+            input.value = value;
+            input.style.padding = '10px';
+            input.style.borderRadius = '10px';
+            input.style.border = '1px solid #ccc';
+            container.appendChild(input);
+            container.appendChild(document.createElement('br'));
+        }
+
+        document.getElementById('fdtForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const contractId = document.getElementById('currentContractId').value;
+            const recordId = this.dataset.recordId;
+            const item = document.getElementById('item').value;
+            const description = document.getElementById('description').value;
+            const quantity = document.getElementById('quantity').value;
+            const unit = document.getElementById('unit').value;
+            const testType = document.getElementById('testType').value;
+            const itemUid = document.getElementById('itemUid').value || generateUID();
+
+            const dateOfWork = Array.from(document.querySelectorAll('.dateOfWorkInput')).map(input => input.value);
+            const dateOfTest = Array.from(document.querySelectorAll('.dateOfTestInput')).map(input => input.value);
+
+            const fdtData = {
+                item,
+                description,
+                quantity,
+                unit,
+                testType,
+                dateOfWork,
+                dateOfTest,
+                itemUid
+            };
+
+            let promise;
+            if (recordId) {
+                // Update existing record
+                promise = db.ref(`FDT/${contractId}/${recordId}`).update(fdtData);
+            } else {
+                // Create new record
+                promise = db.ref(`FDT/${contractId}`).push(fdtData);
+            }
+
+            promise.then(() => {
+                alert('FDT record saved successfully.');
+                closeModal();
+                loadFDTTable(contractId);
+                checkTestDates(); // Check for new notifications
+            }).catch(error => {
+                alert('Error saving data: ' + error.message);
+            });
+        });
+
+        // TABLE FUNCTIONS - UPDATED TO ONLY SHOW TEST TYPE "D"
+        function loadFDTTable(contractId) {
+            const tableBody = document.querySelector('#fdtTable tbody');
+            tableBody.innerHTML = '<tr><td colspan="8">Loading...</td></tr>';
+            document.getElementById('contractIdHeader').textContent = contractId;
+            
+            // Show the Gantt chart button
+            document.getElementById('showGanttBtn').style.display = 'block';
+            document.getElementById('showGanttBtn').onclick = () => {
+                showGanttChart(contractId);
+            };
+
+            db.ref(`FDT/${contractId}`).orderByChild('testType').equalTo('D').once('value', (snapshot) => {
+                tableBody.innerHTML = '';
+
+                if (!snapshot.exists()) {
+                    tableBody.innerHTML = '<tr><td colspan="8">No destructive test records found.</td></tr>';
+                    return;
+                }
+
+                const fdtData = [];
+                snapshot.forEach(child => {
+                    const record = child.val();
+                    const recordId = child.key;
+                    
+                    // Ensure dates are properly formatted as strings (YYYY-MM-DD)
+                    const workDates = (record.dateOfWork || []).map(date => {
+                        if (date instanceof Date) return date.toISOString().split('T')[0];
+                        return date; // Assume it's already in correct format
+                    });
+                    
+                    const testDates = (record.dateOfTest || []).map(date => {
+                        if (date instanceof Date) return date.toISOString().split('T')[0];
+                        return date; // Assume it's already in correct format
+                    });
+
+                    // Add to table
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${record.item}</td>
+                        <td>${record.description}</td>
+                        <td>${record.quantity}</td>
+                        <td>${record.unit}</td>
+                        <td>${workDates.join(', ')}</td>
+                        <td>${testDates.join(', ')}</td>
+                        <td>${record.testType || 'N/A'}</td>
+                        <td>
+                            <button class="action-btn edit-btn" onclick="editRecord('${contractId}', '${recordId}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn delete-btn" onclick="deleteRecord('${contractId}', '${recordId}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                    
+                    // Prepare data for Gantt chart with properly formatted dates
+                    fdtData.push({
+                        label: record.item,
+                        workDates: workDates,
+                        testDates: testDates,
+                        description: record.description,
+                        quantity: record.quantity,
+                        unit: record.unit,
+                        testType: record.testType
+                    });
+                });
+                
+                // Store the data for Gantt chart
+                currentGanttData = fdtData;
+                currentContractDetails = { contractId };
+            });
+        }
+
+        // AUTO-FILL DESCRIPTION WHEN ITEM MATCHES EXISTING ITEM
+        document.getElementById('item').addEventListener('input', function() {
+            const itemName = this.value.trim();
+            if (itemName.length === 0) return;
+            
+            const contractId = document.getElementById('currentContractId').value;
+            if (!contractId) return;
+            
+            // Search for matching items in the database
+            db.ref(`FDT/${contractId}`).orderByChild('item').equalTo(itemName).once('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    // Get the first matching item's description
+                    const firstMatch = Object.values(snapshot.val())[0];
+                    if (firstMatch && firstMatch.description) {
+                        document.getElementById('description').value = firstMatch.description;
+                    }
+                }
+            });
+        });
+
+        function showGanttChart(contractId) {
+            if (!currentGanttData || currentGanttData.length === 0) {
+                alert('No data available to display Gantt chart');
+                return;
+            }
+            
+            // Show the modal
+            document.getElementById('ganttModal').style.display = 'flex';
+            
+            // First populate the dropdowns
+            populateYearSelect();
+            
+            // Then generate the chart (which will use the current filter selections)
+            generateGanttChart(currentGanttData, contractId);
+        }
+
+        function closeGanttModal() {
+            document.getElementById('ganttModal').style.display = 'none';
+        }
+
+        function generateGanttChart(fdtData, contractId) {
+            // Clear existing content
+            document.getElementById('ganttHeader').innerHTML = '';
+            document.getElementById('ganttTaskLabels').innerHTML = '';
+            document.getElementById('ganttGrid').innerHTML = '';
+            
+            // Filter out items with no dates
+            fdtData = fdtData.filter(item => 
+                (item.workDates && item.workDates.length > 0) || 
+                (item.testDates && item.testDates.length > 0)
+            );
+            
+            if (fdtData.length === 0) {
+                document.getElementById('ganttGrid').innerHTML = '<p>No schedule data available for selected filter</p>';
+                return;
+            }
+            
+            // Fetch additional contract information
+            function loadContractInfo(contractId) {
+                const contractInfoContainer = document.getElementById('ganttContractInfo');
+                
+                // First try the direct path (contracts/{contractId})
+                db.ref(`contracts/${contractId}`).once('value').then((contractSnapshot) => {
+                    const contractData = contractSnapshot.val();
+                    
+                    if (!contractData) {
+                        // If no data at direct path, try querying contracts where contractId matches
+                        return db.ref('contracts').orderByChild('contractId').equalTo(contractId).once('value');
+                    }
+                    return { val: () => contractData }; // Return in same format as query
+                }).then((querySnapshot) => {
+                    const contractData = querySnapshot.val();
+                    
+                    let contractInfoHTML = `
+                        <div class="gantt-header-info-item">
+                            <div class="gantt-header-info-label">Contract ID</div>
+                            <div class="gantt-header-info-value">${contractId}</div>
+                        </div>`;
+                    
+                    if (contractData) {
+                        // Handle both direct path and query results
+                        const data = contractData.contractId ? contractData : 
+                                   (Object.values(contractData)[0] || {});
+                        
+                        contractInfoHTML += `
+                            <div class="gantt-header-info-item">
+                                <div class="gantt-header-info-label">Contract Name</div>
+                                <div class="gantt-header-info-value">${data.contractName || 'N/A'}</div>
+                            </div>
+                            <div class="gantt-header-info-item">
+                                <div class="gantt-header-info-label">Location</div>
+                                <div class="gantt-header-info-value">${data.location || 'N/A'}</div>
+                            </div>
+                            <div class="gantt-header-info-item">
+                                <div class="gantt-header-info-label">Duration</div>
+                                <div class="gantt-header-info-value">${data.contractDuration || 'N/A'}</div>
+                            </div>
+                            <div class="gantt-header-info-item">
+                                <div class="gantt-header-info-label">Contractor</div>
+                                <div class="gantt-header-info-value">${data.contractor || 'N/A'}</div>
+                            </div>`;
+                    } else {
+                        contractInfoHTML += `
+                            <div class="gantt-header-info-item">
+                                <div class="gantt-header-info-label">Status</div>
+                                <div class="gantt-header-info-value">Contract details not found</div>
+                            </div>`;
+                    }
+                    
+                    contractInfoContainer.innerHTML = contractInfoHTML;
+                }).catch((error) => {
+                    console.error("Error fetching contract details:", error);
+                    contractInfoContainer.innerHTML = `
+                        <div class="gantt-header-info-item">
+                            <div class="gantt-header-info-label">Contract ID</div>
+                            <div class="gantt-header-info-value">${contractId}</div>
+                        </div>
+                        <div class="gantt-header-info-item">
+                            <div class="gantt-header-info-label">Error</div>
+                            <div class="gantt-header-info-value">Could not load contract details</div>
+                        </div>`;
+                });
+            }
+            
+            loadContractInfo(contractId);
+                    
+            // Find date range for the Gantt chart
+            const allDates = fdtData.flatMap(item => [...item.workDates, ...item.testDates]);
+            if (allDates.length === 0) {
+                ganttGrid.innerHTML = '<p>No dates found in records</p>';
+                return;
+            }
+            
+            // Sort dates and calculate range
+            const sortedDates = [...new Set(allDates)].sort();
+            const startDate = new Date(sortedDates[0]);
+            const endDate = new Date(sortedDates[sortedDates.length - 1]);
+            
+            // Calculate total days in the range
+            const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+            
+            // Create month+year, day number, and day-of-week rows
+            const monthYearRow = document.createElement('div');
+            monthYearRow.className = 'month-row';
+            const dayNumberRow = document.createElement('div');
+            dayNumberRow.className = 'day-row';
+            const dayOfWeekRow = document.createElement('div');
+            dayOfWeekRow.className = 'day-of-week-row';
+            
+            let currentMonthYear = null;
+            let monthYearCell = null;
+            let monthYearStartIndex = 0;
+            
+            for (let i = 0; i < totalDays; i++) {
+                const date = new Date(startDate);
+                date.setDate(date.getDate() + i);
+                const dateStr = date.toISOString().split('T')[0];
+                
+                // Month+Year cells
+                const monthYear = date.toLocaleString('default', { month: 'long' }) + ' ' + date.getFullYear();
+                if (monthYear !== currentMonthYear) {
+                    if (monthYearCell) {
+                        // Set width for previous month+year cell
+                        monthYearCell.style.width = `${(i - monthYearStartIndex) * 24}px`;
+                    }
+                    currentMonthYear = monthYear;
+                    monthYearStartIndex = i;
+                    monthYearCell = document.createElement('div');
+                    monthYearCell.className = 'month-cell';
+                    monthYearCell.textContent = monthYear;
+                    monthYearRow.appendChild(monthYearCell);
+                }
+                
+                // Day number cells
+                const dayNumberCell = document.createElement('div');
+                dayNumberCell.className = 'day-cell';
+                dayNumberCell.textContent = date.getDate();
+                dayNumberCell.title = date.toLocaleDateString();
+                
+                // Highlight weekends
+                if (date.getDay() === 0 || date.getDay() === 6) {
+                    dayNumberCell.classList.add('weekend');
+                }
+                
+                dayNumberRow.appendChild(dayNumberCell);
+                
+                // Day of week cells
+                const dayOfWeekCell = document.createElement('div');
+                dayOfWeekCell.className = 'day-of-week-cell';
+                
+                // Set day of week abbreviation
+                switch(date.getDay()) {
+                    case 0: dayOfWeekCell.textContent = 'S'; break;
+                    case 1: dayOfWeekCell.textContent = 'M'; break;
+                    case 2: dayOfWeekCell.textContent = 'T'; break;
+                    case 3: dayOfWeekCell.textContent = 'W'; break;
+                    case 4: dayOfWeekCell.textContent = 'Th'; break;
+                    case 5: dayOfWeekCell.textContent = 'F'; break;
+                    case 6: dayOfWeekCell.textContent = 'S'; break;
+                }
+                
+                // Highlight weekends
+                if (date.getDay() === 0 || date.getDay() === 6) {
+                    dayOfWeekCell.classList.add('weekend');
+                }
+                
+                dayOfWeekRow.appendChild(dayOfWeekCell);
+            }
+            
+            // Set width for the last month+year cell
+            if (monthYearCell) {
+                monthYearCell.style.width = `${(totalDays - monthYearStartIndex) * 24}px`;
+            }
+            
+            // Add the header rows
+            ganttHeader.appendChild(monthYearRow);
+            ganttHeader.appendChild(dayNumberRow);
+            ganttHeader.appendChild(dayOfWeekRow);
+            
+            // Generate task labels and rows
+            fdtData.forEach(item => {
+                // Create task label with description in sidebar
+                const labelContainer = document.createElement('div');
+                labelContainer.className = 'gantt-sidebar-item';
+                
+                const label = document.createElement('div');
+                label.className = 'gantt-sidebar-label';
+                label.textContent = item.label;
+                label.title = item.label; // Tooltip for full item name
+                
+                const desc = document.createElement('div');
+                desc.className = 'gantt-sidebar-desc';
+                desc.textContent = item.description || 'No description';
+                desc.title = item.description; // Tooltip for full description
+                
+                labelContainer.appendChild(label);
+                labelContainer.appendChild(desc);
+                ganttTaskLabels.appendChild(labelContainer);
+                
+                // Create corresponding task row in grid
+                const row = document.createElement('div');
+                row.className = 'task-row';
+                    
+                for (let i = 0; i < totalDays; i++) {
+                    const date = new Date(startDate);
+                    date.setDate(date.getDate() + i);
+                    const dateStr = date.toISOString().split('T')[0];
+                    
+                    const cell = document.createElement('div');
+                    cell.className = 'task-cell';
+                    
+                    // Check for work dates
+                    const isWorkDate = item.workDates.includes(dateStr);
+                    // Check for test dates
+                    const isTestDate = item.testDates.includes(dateStr);
+                    
+                    if (isWorkDate && isTestDate) {
+                        // Both work and test on same date - show split cell
+                        const workDiv = document.createElement('div');
+                        workDiv.className = 'date-of-work';
+                        workDiv.style.height = '50%';
+                        cell.appendChild(workDiv);
+                        
+                        const testDiv = document.createElement('div');
+                        testDiv.className = 'date-of-test';
+                        testDiv.style.height = '50%';
+                        testDiv.style.top = '50%';
+                        cell.appendChild(testDiv);
+                    } 
+                    else if (isWorkDate) {
+                        const workDiv = document.createElement('div');
+                        workDiv.className = 'date-of-work';
+                        cell.appendChild(workDiv);
+                    } 
+                    else if (isTestDate) {
+                        const testDiv = document.createElement('div');
+                        testDiv.className = 'date-of-test';
+                        cell.appendChild(testDiv);
+                    }
+                    
+                    // Add tooltip with date info
+                    if (isWorkDate || isTestDate) {
+                        let tooltip = `${item.label}\n${date.toLocaleDateString()}`;
+                        if (isWorkDate) tooltip += "\nWork Date";
+                        if (isTestDate) tooltip += "\nTest Date";
+                        cell.title = tooltip;
+                    }
+                    
+                    row.appendChild(cell);
+                }
+                
+                ganttGrid.appendChild(row);
+            });
+            
+            // Get DOM elements for scrolling
+            const sidebar = document.querySelector('.gantt-sidebar');
+            const contentScroll = document.getElementById('contentScroll');
+            const headerScroll = document.getElementById('headerScroll');
+            
+            // Synchronize horizontal scrolling between header and content
+            headerScroll.addEventListener('scroll', function() {
+                contentScroll.scrollLeft = this.scrollLeft;
+            });
+            
+            contentScroll.addEventListener('scroll', function() {
+                // Sync horizontal scrolling with header
+                headerScroll.scrollLeft = this.scrollLeft;
+                
+                // Sync vertical scrolling between sidebar and content
+                sidebar.scrollTop = this.scrollTop;
+            });
+            
+            sidebar.addEventListener('scroll', function() {
+                // Sync vertical scrolling between sidebar and content
+                contentScroll.scrollTop = this.scrollTop;
+            });
+            
+            // Reset scroll positions when new chart is generated
+            headerScroll.scrollLeft = 0;
+            contentScroll.scrollLeft = 0;
+            contentScroll.scrollTop = 0;
+            sidebar.scrollTop = 0;
+        }
+
+        function filterGanttChart() {
+            const selectedMonth = document.getElementById('monthSelect').value;
+            const selectedYear = document.getElementById('yearSelect').value;
+            const contractId = document.getElementById('contractIdHeader').textContent;
+            
+            if (!currentGanttData) return;
+            
+            // Create a deep copy of the original data
+            let filteredData = JSON.parse(JSON.stringify(currentGanttData));
+            
+            // Filter the data based on selected month/year
+            filteredData = filteredData.map(item => {
+                // Filter work dates
+                const filteredWorkDates = (item.workDates || []).filter(date => {
+                    if (!date) return false;
+                    const d = new Date(date);
+                    return (selectedMonth === 'all' || d.getMonth() === parseInt(selectedMonth)) &&
+                           (selectedYear === 'all' || d.getFullYear() === parseInt(selectedYear));
+                });
+                
+                // Filter test dates
+                const filteredTestDates = (item.testDates || []).filter(date => {
+                    if (!date) return false;
+                    const d = new Date(date);
+                    return (selectedMonth === 'all' || d.getMonth() === parseInt(selectedMonth)) &&
+                           (selectedYear === 'all' || d.getFullYear() === parseInt(selectedYear));
+                });
+                
+                return {
+                    ...item,
+                    workDates: filteredWorkDates,
+                    testDates: filteredTestDates
+                };
+            }).filter(item => 
+                (item.workDates && item.workDates.length > 0) || 
+                (item.testDates && item.testDates.length > 0)
+            );
+            
+            // Regenerate the chart with filtered data
+            generateGanttChart(filteredData, contractId);
+        }
+
+        function populateYearSelect() {
+            const yearSelect = document.getElementById('yearSelect');
+            yearSelect.innerHTML = '<option value="all">All Years</option>';
+            
+            if (!currentGanttData || currentGanttData.length === 0) return;
+
+            // Get all unique years from the data
+            const years = new Set();
+            
+            currentGanttData.forEach(item => {
+                [...(item.workDates || []), ...(item.testDates || [])].forEach(date => {
+                    if (date) {
+                        try {
+                            const year = new Date(date).getFullYear();
+                            if (!isNaN(year)) years.add(year);
+                        } catch (e) {
+                            console.error("Invalid date:", date);
+                        }
+                    }
+                });
+            });
+
+            // Add sorted years to dropdown
+            Array.from(years).sort().forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            });
+        }
+
+        // Updated export function
+        async function exportGanttToPDF() {
+            try {
+                // Check if jsPDF is available
+                if (typeof window.jspdf === 'undefined') {
+                    throw new Error("PDF library not loaded. Please refresh the page.");
+                }
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: 'landscape'
+                });
+
+                // Add title
+                doc.setFontSize(18);
+                doc.setTextColor(28, 28, 100);
+                doc.text('FDT SCHEDULER - COMPREHENSIVE REPORT', doc.internal.pageSize.width / 2, 15, { align: 'center' });
+
+                // Add current date
+                const today = new Date();
+                doc.setFontSize(10);
+                doc.text(`Report generated: ${today.toLocaleDateString()}`, doc.internal.pageSize.width - 14, 15, { align: 'right' });
+
+                // 1. CONTRACT INFORMATION SECTION
+                const contractInfoContainer = document.getElementById('ganttContractInfo');
+                if (!contractInfoContainer) {
+                    throw new Error("Contract information container not found");
+                }
+
+                const contractInfoItems = contractInfoContainer.querySelectorAll('.gantt-header-info-item');
+                const contractData = [];
+                
+                contractInfoItems.forEach(item => {
+                    const label = item.querySelector('.gantt-header-info-label')?.textContent || '';
+                    const value = item.querySelector('.gantt-header-info-value')?.textContent || '';
+                    contractData.push([label, value]);
+                });
+
+                // Add contract info table
+                doc.autoTable({
+                    startY: 25,
+                    head: [['Contract Information', 'Details']],
+                    body: contractData,
+                    theme: 'grid',
+                    headStyles: {
+                        fillColor: [28, 28, 100],
+                        textColor: 255
+                    },
+                    columnStyles: {
+                        0: { fontStyle: 'bold', textColor: [28, 28, 100] }
+                    },
+                    margin: { top: 20 }
+                });
+
+                // 2. FDT TABLE SECTION
+                const fdtTable = document.getElementById('fdtTable');
+                if (!fdtTable) {
+                    throw new Error("FDT table not found");
+                }
+
+                // Prepare FDT table data
+                const fdtData = [];
+                const rows = fdtTable.querySelectorAll('tbody tr');
+                
+                rows.forEach(row => {
+                    const rowData = [];
+                    const cells = row.querySelectorAll('td');
+                    
+                    cells.forEach((cell, index) => {
+                        // Skip the actions column (last column)
+                        if (index < cells.length - 1) {
+                            rowData.push(cell.textContent.trim());
+                        }
+                    });
+                    
+                    if (rowData.length > 0) {
+                        fdtData.push(rowData);
+                    }
+                });
+
+                // Add FDT table
+                doc.autoTable({
+                    startY: doc.lastAutoTable.finalY + 15,
+                    head: [
+                        ['Item', 'Description', 'Quantity', 'Unit', 'Date of Work', 'Date of Test', 'Test Type']
+                    ],
+                    body: fdtData,
+                    theme: 'grid',
+                    headStyles: {
+                        fillColor: [28, 28, 100],
+                        textColor: 255
+                    },
+                    columnStyles: {
+                        0: { fontStyle: 'bold' }, // Item column bold
+                        2: { halign: 'right' },   // Quantity right-aligned
+                        4: { fontStyle: 'italic' }, // Dates italic
+                        5: { fontStyle: 'italic' }
+                    },
+                    styles: {
+                        fontSize: 8,
+                        cellPadding: 3,
+                        overflow: 'linebreak'
+                    },
+                    margin: { top: 10 }
+                });
+
+                // 3. GANTT CHART SECTION - MODIFIED TO SHOW ALL ITEMS
+        const legendY = doc.lastAutoTable.finalY + 10;
+        doc.setFontSize(12);
+        doc.text('Legend:', 14, legendY);
+        doc.setFillColor(218, 71, 31);
+        doc.rect(30, legendY - 2, 5, 5, 'F');
+        doc.text('Date of Work', 40, legendY);
+        doc.setFillColor(28, 28, 100);
+        doc.rect(80, legendY - 2, 5, 5, 'F');
+        doc.text('Date of Test', 90, legendY);
+
+        // Create a temporary container with scrollable content
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'absolute';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.width = '1000px';
+        tempContainer.style.backgroundColor = 'white';
+        tempContainer.style.overflow = 'visible';
+        document.body.appendChild(tempContainer);
+
+        // Clone the original Gantt container
+        const originalGantt = document.querySelector('.gantt-container');
+        const clonedGantt = originalGantt.cloneNode(true);
+        tempContainer.appendChild(clonedGantt);
+
+        // Remove any max-height or overflow restrictions
+        clonedGantt.style.maxHeight = 'none';
+        clonedGantt.style.overflow = 'visible';
+
+        // Calculate dimensions based on content
+        const rowHeight = 24; // Fixed row height
+        const numRows = currentGanttData.length;
+        const totalHeight = numRows * rowHeight + 100; // Add extra for headers
+
+        // Adjust all container heights
+        clonedGantt.style.height = `${totalHeight}px`;
+        
+        const sidebar = clonedGantt.querySelector('.gantt-sidebar');
+        const content = clonedGantt.querySelector('.gantt-content');
+        const grid = clonedGantt.querySelector('.gantt-grid');
+        
+        if (sidebar && content && grid) {
+            sidebar.style.height = `${totalHeight}px`;
+            content.style.height = `${totalHeight}px`;
+            grid.style.minHeight = `${totalHeight}px`;
+        }
+
+        // Ensure all task rows are visible and properly sized
+        const taskRows = clonedGantt.querySelectorAll('.task-row');
+        taskRows.forEach(row => {
+            row.style.height = `${rowHeight}px`;
+            row.style.minHeight = `${rowHeight}px`;
+            row.style.visibility = 'visible';
+        });
+
+        // Make sure all sidebar items are visible and match row height
+        const sidebarItems = clonedGantt.querySelectorAll('.gantt-sidebar-item');
+        sidebarItems.forEach(item => {
+            item.style.minHeight = `${rowHeight}px`;
+            item.style.height = `${rowHeight}px`;
+            item.style.display = 'flex';
+            item.style.alignItems = 'center';
+            item.style.visibility = 'visible';
+        });
+
+        // Add descriptions to all sidebar items
+        const taskLabels = clonedGantt.querySelectorAll('.gantt-sidebar-item');
+        taskLabels.forEach((label, index) => {
+            // Remove any existing description elements to avoid duplicates
+            const existingDesc = label.querySelector('.gantt-sidebar-desc');
+            if (existingDesc) {
+                label.removeChild(existingDesc);
+            }
+
+            const itemData = currentGanttData[index];
+            if (itemData && itemData.description) {
+                const descElement = document.createElement('div');
+                descElement.className = 'gantt-sidebar-desc';
+                descElement.textContent = itemData.description;
+                descElement.style.fontSize = '10px';
+                descElement.style.color = '#666';
+                descElement.style.marginLeft = '10px';
+                descElement.style.whiteSpace = 'normal';
+                descElement.style.flex = '1';
+                descElement.style.overflow = 'hidden';
+                label.appendChild(descElement);
+            }
+        });
+
+        // Ensure all content is visible
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Capture the Gantt chart image with all content visible
+        const canvas = await html2canvas(clonedGantt, {
+            scale: 1,
+            logging: true,
+            useCORS: true,
+            allowTaint: true,
+            width: clonedGantt.scrollWidth,
+            height: totalHeight,
+            scrollX: 0,
+            scrollY: 0,
+            windowWidth: clonedGantt.scrollWidth,
+            windowHeight: totalHeight,
+            onclone: (clonedDoc) => {
+                const style = clonedDoc.createElement('style');
+                style.textContent = `
+                    .gantt-container {
+                        height: ${totalHeight}px !important;
+                        overflow: visible !important;
+                    }
+                    .gantt-sidebar { 
+                        width: 200px !important;
+                        height: ${totalHeight}px !important;
+                        overflow: visible !important;
+                    }
+                    .gantt-content {
+                        height: ${totalHeight}px !important;
+                        overflow: visible !important;
+                    }
+                    .gantt-grid {
+                        min-height: ${totalHeight}px !important;
+                    }
+                    .gantt-sidebar-item { 
+                        min-height: ${rowHeight}px !important;
+                        height: ${rowHeight}px !important;
+                        padding: 2px 2px !important;
+                        display: flex !important;
+                        align-items: center !important;
+                        visibility: visible !important;
+                    }
+                    .gantt-sidebar-label { 
+                        font-weight: bold !important;
+                        font-size: 12px !important;
+                        white-space: nowrap !important;
+                        overflow: hidden !important;
+                        text-overflow: ellipsis !important;
+                    }
+                    .gantt-sidebar-desc { 
+                        font-size: 10px !important;
+                        color: #666 !important;
+                        margin-left: 1px !important;
+                        white-space: normal !important;
+                        flex: 1 !important;
+                        overflow: hidden !important;
+                    }
+                    .task-row {
+                        height: ${rowHeight}px !important;
+                        min-height: ${rowHeight}px !important;
+                        visibility: visible !important;
+                    }
+                    .task-cell {
+                        height: ${rowHeight}px !important;
+                    }
+                `;
+                clonedDoc.head.appendChild(style);
+            }
+        }).catch(e => {
+            console.error("html2canvas error:", e);
+            throw new Error("Failed to capture Gantt chart image");
+        });
+
+        // Add Gantt chart to PDF
+        const imgData = canvas.toDataURL('image/png');
+        const pdfWidth = doc.internal.pageSize.getWidth() - 20;
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        
+        // Add new page if needed
+        const imageY = doc.lastAutoTable.finalY + 15;
+        if (imageY + pdfHeight > doc.internal.pageSize.height - 20) {
+            doc.addPage('landscape');
+            doc.addImage(imgData, 'PNG', 10, 20, pdfWidth, pdfHeight);
+        } else {
+            doc.addImage(imgData, 'PNG', 10, imageY, pdfWidth, pdfHeight);
+        }
+
+        // Clean up
+        document.body.removeChild(tempContainer);
+
+        // Add page numbers
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(10);
+            doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width - 20, doc.internal.pageSize.height - 10);
+        }
+
+        // Save the PDF
+        const contractId = document.getElementById('contractIdHeader').textContent || 'UnknownContract';
+        doc.save(`FDT_Report_${contractId}_${new Date().toISOString().split('T')[0]}.pdf`);
+
+    } catch (error) {
+        console.error("Export failed:", error);
+        alert(`Error exporting report: ${error.message || 'Unknown error'}`);
+        const tempContainer = document.querySelector('div[style*="left: -9999px"]');
+        if (tempContainer) document.body.removeChild(tempContainer);
+    }
+}
+
+        function editRecord(contractId, recordId) {
+            db.ref(`FDT/${contractId}/${recordId}`).once('value', (snapshot) => {
+                const record = snapshot.val();
+                
+                // Fill the form with existing data
+                document.getElementById('item').value = record.item;
+                document.getElementById('description').value = record.description;
+                document.getElementById('quantity').value = record.quantity;
+                document.getElementById('unit').value = record.unit;
+                document.getElementById('testType').value = record.testType || '';
+                document.getElementById('itemUid').value = record.itemUid || generateUID();
+                
+                // Clear existing date fields
+                document.getElementById('dateOfWorkContainer').innerHTML = '<label style="font-weight: bold;">Date of Work</label><br>';
+                document.getElementById('dateOfTestContainer').innerHTML = '<label style="font-weight: bold;">Date of Test</label><br>';
+                
+                // Add date fields with existing values
+                if (record.dateOfWork) {
+                    record.dateOfWork.forEach(date => {
+                        addDateFieldWithValue('dateOfWorkContainer', 'dateOfWorkInput', date);
+                    });
+                }
+                
+                if (record.dateOfTest) {
+                    record.dateOfTest.forEach(date => {
+                        addDateFieldWithValue('dateOfTestContainer', 'dateOfTestInput', date);
+                    });
+                }
+                
+                // Store the record ID for updating
+                document.getElementById('currentContractId').value = contractId;
+                document.querySelector('#fdtForm').dataset.recordId = recordId;
+                
+                // Open the modal
+                document.getElementById('fdtModal').style.display = 'flex';
+            });
+        }
+
+        function deleteRecord(contractId, recordId) {
+            if (confirm('Are you sure you want to delete this record?')) {
+                db.ref(`FDT/${contractId}/${recordId}`).remove()
+                    .then(() => {
+                        alert('Record deleted successfully');
+                        loadFDTTable(contractId);
+                    })
+                    .catch(error => {
+                        alert('Error deleting record: ' + error.message);
+                    });
+            }
+        }
+
+        // NOTIFICATION FUNCTIONS - UPDATED TO ONLY CHECK TEST TYPE "D"
+        function checkTestDates() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // Get all FDT records from all contracts
+            db.ref('FDT').once('value', (snapshot) => {
+                const notifications = [];
+                const expiredNotifications = [];
+                const accomplishedNotifications = [];
+                const contracts = snapshot.val() || {};
+                
+                Object.keys(contracts).forEach(contractId => {
+                    const contractItems = contracts[contractId];
+                    
+                    Object.keys(contractItems).forEach(itemId => {
+                        const item = contractItems[itemId];
+                        
+                        // Only check items with testType "D" and have dateOfTest
+                        if (item.testType === 'D' && item.dateOfTest && Array.isArray(item.dateOfTest)) {
+                            // Check for accomplished tests
+                            if (item.accomplishedDates) {
+                                Object.keys(item.accomplishedDates).forEach(testDate => {
+                                    if (item.accomplishedDates[testDate]) {
+                                        accomplishedNotifications.push({
+                                            contractId,
+                                            itemId,
+                                            item: item.item,
+                                            description: item.description,
+                                            quantity: item.quantity,
+                                            unit: item.unit,
+                                            testDate: testDate,
+                                            message: 'Test was completed on ' + formatDate(testDate),
+                                            type: 'accomplished',
+                                            date: today.toISOString().split('T')[0],
+                                            accomplished: true
+                                        });
+                                    }
+                                });
+                            }
+                            
+                            item.dateOfTest.forEach(testDate => {
+                                if (!testDate) return;
+                                
+                                const testDateObj = new Date(testDate);
+                                testDateObj.setHours(0, 0, 0, 0);
+                                
+                                const diffTime = testDateObj - today;
+                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                
+                                // Skip if this test is already accomplished
+                                if (item.accomplishedDates && item.accomplishedDates[testDate]) {
+                                    return;
+                                }
+                                
+                                // Check if test is expired (past due)
+                                if (diffDays < 0) {
+                                    expiredNotifications.push({
+                                        contractId,
+                                        itemId,
+                                        item: item.item,
+                                        description: item.description,
+                                        quantity: item.quantity,
+                                        unit: item.unit,
+                                        testDate: testDate,
+                                        message: 'Test was due on ' + formatDate(testDate),
+                                        type: 'expired',
+                                        daysOverdue: Math.abs(diffDays),
+                                        date: today.toISOString().split('T')[0],
+                                        accomplished: false
+                                    });
+                                }
+                                // Only show notifications for upcoming tests (0-3 days)
+                                else if (diffDays >= 0 && diffDays <= 3) {
+                                    let message = '';
+                                    let type = '';
+                                    
+                                    if (diffDays === 0) {
+                                        message = 'Test is scheduled for TODAY';
+                                        type = 'urgent';
+                                    } else if (diffDays === 1) {
+                                        message = 'Test is scheduled for TOMORROW';
+                                        type = 'urgent';
+                                    } else if (diffDays === 2) {
+                                        message = 'Test is scheduled in 2 DAYS';
+                                        type = 'warning';
+                                    } else if (diffDays === 3) {
+                                        message = 'Test is scheduled in 3 DAYS';
+                                        type = 'info';
+                                    }
+                                    
+                                    notifications.push({
+                                        contractId,
+                                        itemId,
+                                        item: item.item,
+                                        description: item.description,
+                                        quantity: item.quantity,
+                                        unit: item.unit,
+                                        testDate: testDate,
+                                        message,
+                                        type,
+                                        daysRemaining: diffDays,
+                                        date: today.toISOString().split('T')[0],
+                                        accomplished: false
+                                    });
+                                }
+                            });
+                        }
+                    });
+                });
+                
+                // Sort notifications by urgency (closest dates first)
+                notifications.sort((a, b) => a.daysRemaining - b.daysRemaining);
+                // Sort expired notifications by most overdue first
+                expiredNotifications.sort((a, b) => b.daysOverdue - a.daysOverdue);
+                // Sort accomplished notifications by most recent first
+                accomplishedNotifications.sort((a, b) => new Date(b.testDate) - new Date(a.testDate));
+                
+                // Update notification UI
+                updateNotificationUI(notifications, expiredNotifications, accomplishedNotifications);
+                
+                // Play sound if there are new urgent notifications
+                if (notifications.some(n => n.type === 'urgent')) {
+                    playNotificationSound();
+                }
+            });
+        }
+
+        function playNotificationSound() {
+            const sound = document.getElementById('notificationSound');
+            sound.currentTime = 0; // Rewind to start
+            sound.play().catch(e => console.log("Audio play failed:", e));
+        }
+
+        function updateNotificationUI(notifications, expiredNotifications, accomplishedNotifications) {
+            const notificationList = document.getElementById('notificationList');
+            const notificationCount = document.getElementById('notificationCount');
+            
+            notificationList.innerHTML = '';
+            
+            // Create tabs
+            notificationList.innerHTML = `
+                <div class="notification-tabs">
+                    <button class="notification-tab active" onclick="switchNotificationTab('upcoming')">Upcoming (${notifications.length})</button>
+                    <button class="notification-tab" onclick="switchNotificationTab('expired')">Expired (${expiredNotifications.length})</button>
+                    <button class="notification-tab" onclick="switchNotificationTab('accomplished')">Accomplished (${accomplishedNotifications.length})</button>
+                </div>
+                <div id="upcomingNotifications" class="notification-tab-content">
+                    ${notifications.length === 0 ? '<div class="notification-item">No upcoming destructive tests</div>' : ''}
+                </div>
+                <div id="expiredNotifications" class="notification-tab-content" style="display:none;">
+                    ${expiredNotifications.length === 0 ? '<div class="notification-item">No expired destructive tests</div>' : ''}
+                </div>
+                <div id="accomplishedNotifications" class="notification-tab-content" style="display:none;">
+                    ${accomplishedNotifications.length === 0 ? '<div class="notification-item">No accomplished destructive tests</div>' : ''}
+                </div>
+            `;
+            
+            const upcomingContainer = document.getElementById('upcomingNotifications');
+            const expiredContainer = document.getElementById('expiredNotifications');
+            const accomplishedContainer = document.getElementById('accomplishedNotifications');
+            
+            notifications.forEach(notif => {
+                const notificationItem = document.createElement('div');
+                notificationItem.className = `notification-item ${notif.type}`;
+                
+                notificationItem.innerHTML = `
+                    <div class="notification-item-title">${notif.item} (${notif.quantity} ${notif.unit})</div>
+                    <div class="notification-item-message">${notif.message}</div>
+                    <div class="notification-item-message">Contract: ${notif.contractId}</div>
+                    <div class="notification-item-date">Test Date: ${formatDate(notif.testDate)}</div>
+                `;
+                
+                notificationItem.onclick = () => {
+                    showAccomplishmentForm(notif.contractId, notif.itemId, notif.testDate);
+                    closeNotifications();
+                };
+                
+                upcomingContainer.appendChild(notificationItem);
+            });
+            
+            expiredNotifications.forEach(notif => {
+                const notificationItem = document.createElement('div');
+                notificationItem.className = `notification-item ${notif.type}`;
+                
+                notificationItem.innerHTML = `
+                    <div class="notification-item-title">${notif.item} (${notif.quantity} ${notif.unit})</div>
+                    <div class="notification-item-message">${notif.message}</div>
+                    <div class="notification-item-message">Contract: ${notif.contractId}</div>
+                    <div class="notification-item-date">Test Date: ${formatDate(notif.testDate)}</div>
+                `;
+                
+                notificationItem.onclick = () => {
+                    showAccomplishmentForm(notif.contractId, notif.itemId, notif.testDate);
+                    closeNotifications();
+                };
+                
+                expiredContainer.appendChild(notificationItem);
+            });
+            
+            accomplishedNotifications.forEach(notif => {
+                const notificationItem = document.createElement('div');
+                notificationItem.className = `notification-item accomplished`;
+                
+                notificationItem.innerHTML = `
+                    <div class="notification-item-title">${notif.item} (${notif.quantity} ${notif.unit})</div>
+                    <div class="notification-item-message">${notif.message}</div>
+                    <div class="notification-item-message">Contract: ${notif.contractId}</div>
+                    <div class="notification-item-date">Test Date: ${formatDate(notif.testDate)}</div>
+                    <i class="fas fa-check-circle" style="color: green; float: right;"></i>
+                `;
+                
+                notificationItem.onclick = () => {
+                    // Optionally, you could allow marking as not accomplished here
+                    closeNotifications();
+                };
+                
+                accomplishedContainer.appendChild(notificationItem);
+            });
+            
+            // Update total count (excluding accomplished notifications)
+            notificationCount.textContent = (notifications.length + expiredNotifications.length).toString();
+            
+            // Show badge if there are urgent notifications
+            if (notifications.some(n => n.type === 'urgent')) {
+                notificationCount.style.backgroundColor = '#ff0000';
+            } else {
+                notificationCount.style.backgroundColor = '#da471f';
+            }
+        }
+
+        function switchNotificationTab(tabName) {
+            document.querySelectorAll('.notification-tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            document.querySelectorAll('.notification-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName + 'Notifications').style.display = 'block';
+            document.querySelector(`.notification-tab[onclick="switchNotificationTab('${tabName}')"]`).classList.add('active');
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.classList.toggle('show');
+            
+            // Refresh notifications when dropdown is opened
+            if (dropdown.classList.contains('show')) {
+                checkTestDates();
+            }
+        }
+
+        function closeNotifications() {
+            document.getElementById('notificationDropdown').classList.remove('show');
+        }
+
+        function clearNotifications() {
+            // In a real app, you would mark notifications as read in the database
+            // For this demo, we'll just clear the UI
+            document.getElementById('notificationCount').textContent = '0';
+            document.getElementById('notificationList').innerHTML = '<div class="notification-item">No upcoming tests</div>';
+            event.stopPropagation(); // Prevent the dropdown from closing
+        }
+
+        function showAccomplishmentForm(contractId, itemId, testDate) {
+            document.getElementById('accomplishmentContractId').value = contractId;
+            document.getElementById('accomplishmentItemId').value = itemId;
+            document.getElementById('accomplishmentTestDate').value = testDate;
+            document.getElementById('accomplishmentModal').style.display = 'flex';
+            
+            // Reset form
+            document.getElementById('accomplishmentForm').reset();
+        }
+
+        function closeAccomplishmentModal() {
+            document.getElementById('accomplishmentModal').style.display = 'none';
+        }
+
+        document.getElementById('accomplishmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const contractId = document.getElementById('accomplishmentContractId').value;
+            const itemId = document.getElementById('accomplishmentItemId').value;
+            const testDate = document.getElementById('accomplishmentTestDate').value;
+            const accomplished = document.querySelector('input[name="accomplished"]:checked').value === 'yes';
+            
+            // Get the current item data
+            db.ref(`FDT/${contractId}/${itemId}`).once('value').then((snapshot) => {
+                const itemData = snapshot.val();
+                
+                // Update the accomplished status for this specific test date
+                if (!itemData.accomplishedDates) {
+                    itemData.accomplishedDates = {};
+                }
+                itemData.accomplishedDates[testDate] = accomplished;
+                
+                // Also set a general accomplished flag if all tests are done
+                const allDates = itemData.dateOfTest || [];
+                const allAccomplished = allDates.every(date => itemData.accomplishedDates[date] === true);
+                itemData.accomplished = allAccomplished;
+                
+                // Update the database
+                return db.ref(`FDT/${contractId}/${itemId}`).update({
+                    accomplishedDates: itemData.accomplishedDates,
+                    accomplished: itemData.accomplished
+                });
+            }).then(() => {
+                alert('Test status updated successfully');
+                closeAccomplishmentModal();
+                checkTestDates(); // Refresh notifications
+                
+                // If we have this contract open in the table, refresh it
+                const currentContract = document.getElementById('currentContractId').value;
+                if (currentContract === contractId) {
+                    loadFDTTable(contractId);
+                }
+            }).catch(error => {
+                alert('Error updating test status: ' + error.message);
+            });
+        });
+
+        // Close notifications when clicking outside
+        window.addEventListener('click', function(event) {
+            if (!event.target.closest('.notification-container')) {
+                closeNotifications();
+            }
+            
+            if (event.target === document.getElementById('fdtModal')) {
+                closeModal();
+            }
+            if (event.target === document.getElementById('ganttModal')) {
+                closeGanttModal();
+            }
+            if (event.target === document.getElementById('accomplishmentModal')) {
+                closeAccomplishmentModal();
+            }
+        });
+
+
+        // Add this to your existing script section
+document.querySelector('.logout-btn').addEventListener('click', function() {
+    // Clear any notification interval
+    if (notificationInterval) {
+        clearInterval(notificationInterval);
+    }
+    
+    // If using Firebase Authentication, you would sign out here
+    // Example: firebase.auth().signOut();
+    
+    // Redirect to login page
+    window.location.href = 'index.html'; // Change to your actual login page
+});
+
+// If you're using Firebase Authentication, you might want to add:
+
+firebase.auth().onAuthStateChanged((user) => {
+    if (!user) {
+        // User is signed out, redirect to login
+        window.location.href = 'index.html';
+    }
+});
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTHERS</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: #f8fafc;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #1c1c64;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            position: fixed;
+            height: 100%;
+            top: 0;
+            bottom: 0;
+            justify-content: space-between;
+        }
+        .sidebar h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 0 10px;
+            font-size: 25px;
+        }
+        .menu {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            padding: 0 10px;
+            gap: 10px;
+        }
+        .menu a, .dropdown-btn {
+            color: white;
+            text-decoration: none;
+            padding: 15px;
+            cursor: pointer;
+            font-size: 18px;
+            border-radius: 10px;
+            background-color: #1c1c64;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+        .menu a:hover, .dropdown-btn:hover {
+            background-color: #da471f;
+        }
+        .dropdown-container {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .dropdown-container a {
+            font-size: 16px;
+            padding: 12px;
+            background-color: #1c1c64;
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+        .dropdown-container a:hover {
+            background-color: #da471f;
+        }
+        .logout-container {
+            padding: 0 20px 20px;
+        }
+        .logout-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #ff5c33;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+        .logout-btn:hover {
+            background-color: #e04a22;
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+            width: calc(100% - 250px);
+        }
+        .page-title {
+            color: #1c1c64;
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        /* Enhanced Search box styles */
+        .search-container {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 10px;
+            position: relative;
+          width: 100px;
+        }
+        .search-box {
+            flex: 1;
+            padding: 12px 20px;
+            padding-left: 45px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            background-color: white;
+            color: #334155;
+           
+        }
+        .search-box:focus {
+            outline: none;
+            border-color: #1c1c64;
+            box-shadow: 0 2px 12px rgba(28, 28, 100, 0.15);
+        }
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 18px;
+        }
+        
+        /* Enhanced Table container with scroll */
+        .table-container {
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            background-color: white;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .contracts-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background-color: white;
+        }
+        .contracts-table th {
+            position: sticky;
+            top: 0;
+            background-color: #1c1c64;
+            color: white;
+            font-weight: 500;
+            z-index: 10;
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .contracts-table th:first-child {
+            border-top-left-radius: 10px;
+        }
+        .contracts-table th:last-child {
+            border-top-right-radius: 10px;
+        }
+        .contracts-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+            color: #334155;
+        }
+        .contracts-table tr:last-child td {
+            border-bottom: none;
+        }
+        .contracts-table tr:hover td {
+            background-color: #f8fafc;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #1c1c64;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Enhanced Grouped rows styles */
+        .contract-group {
+            background-color: #f1f5f9;
+            font-weight: 600;
+            position: sticky;
+            top: 48px; /* Height of the header */
+            z-index: 5;
+            color: #1c1c64;
+            font-size: 14px;
+        }
+        .contract-group td {
+            padding: 10px 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .contract-item {
+            background-color: white;
+            transition: background-color 0.2s ease;
+        }
+        .contract-item td:first-child {
+            border-left: 2px solid #1c1c64;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 20px 15px;
+            }
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 100;
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .table-container {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div>
+            <h3>QUALITY<br>ASSURANCE<br>SECTION</h3>
+            <div class="menu">
+                <a href="admin_dashboard.html" class="active">Dashboard</a>
+                <a href="user_list.html">Users</a>
+                <a href="info.html">Contract Information</a>
+                <a href="files.html">Files</a>
+                <a href="FDT.html">FDT Scheduler</a>
+                <a href="others.html">Others</a>
+            </div>
+        </div>
+        <div class="logout-container">
+            <button class="logout-btn" id="logoutBtn">LOG OUT</button>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <h1 class="page-title">Contract Testing Information</h1>
+        
+        <!-- Enhanced Search Box -->
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" class="search-box" placeholder="Search">
+        </div>
+        
+        <div id="loadingSpinner" class="spinner"></div>
+        
+        <!-- Enhanced Table Container -->
+        <div class="table-container">
+            <table class="contracts-table" id="contractsTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Contract ID</th>
+                        <th>Item No.</th>
+                        <th>Description</th>
+                        <th>Unit</th>
+                        <th>Quantity</th>
+                        <th>Test Type</th>
+                    </tr>
+                </thead>
+                <tbody id="contractsTableBody">
+                    <!-- Data will be populated here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuxUQaXiWorKsz1wlpCmho2u9OQq2bAnE",
+            authDomain: "qas-section.firebaseapp.com",
+            databaseURL: "https://qas-section-default-rtdb.firebaseio.com",
+            projectId: "qas-section",
+            storageBucket: "qas-section.appspot.com",
+            messagingSenderId: "76857155340",
+            appId: "1:76857155340:web:8b497e036eb55c33607329"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const auth = firebase.auth();
+
+        // Store the original data for filtering
+        let originalData = [];
+
+        // Function to fetch and display contract data
+        function fetchContractData() {
+            const contractsTableBody = document.getElementById('contractsTableBody');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const contractsTable = document.getElementById('contractsTable');
+            
+            // Show loading spinner, hide table
+            loadingSpinner.style.display = 'block';
+            contractsTable.style.display = 'none';
+            
+            // Clear existing table data
+            contractsTableBody.innerHTML = '';
+            
+            // Reference to the FDT node in your database
+            const fdtRef = database.ref('FDT');
+            
+            fdtRef.once('value').then((snapshot) => {
+                const fdtData = snapshot.val();
+                originalData = []; // Reset original data
+                
+                if (fdtData) {
+                    // Object to track which contracts we've processed
+                    const processedContracts = {};
+                    
+                    // Iterate through each contract (ContractId is the UID)
+                    Object.keys(fdtData).forEach(contractId => {
+                        const contract = fdtData[contractId];
+                        
+                        // Only process this contract if we haven't already
+                        if (contract && !processedContracts[contractId]) {
+                            processedContracts[contractId] = true;
+                            
+                            // Create a group header row for the contract
+                            const groupRow = document.createElement('tr');
+                            groupRow.className = 'contract-group';
+                            groupRow.innerHTML = `
+                                <td colspan="6">Contract ID: ${contractId}</td>
+                            `;
+                            contractsTableBody.appendChild(groupRow);
+                            
+                            // Store the contract ID in the row dataset
+                            groupRow.dataset.contractId = contractId;
+                            
+                            // Check if contract has UIDs (items)
+                            if (contract) {
+                                // Iterate through each UID in the contract
+                                Object.keys(contract).forEach(uid => {
+                                    const item = contract[uid];
+                                    
+                                    // Store the original data for filtering
+                                    originalData.push({
+                                        contractId,
+                                        item: item.item || 'N/A',
+                                        description: item.description || 'N/A',
+                                        unit: item.unit || 'N/A',
+                                        quantity: item.quantity || 'N/A',
+                                        testType: item.testType || 'N/A'
+                                    });
+                                    
+                                    // Create a new row for each item
+                                    const row = document.createElement('tr');
+                                    row.className = 'contract-item';
+                                    
+                                    // Populate the row with data
+                                    row.innerHTML = `
+                                        <td></td> <!-- Empty first cell for visual alignment -->
+                                        <td>${item.item || 'N/A'}</td>
+                                        <td>${item.description || 'N/A'}</td>
+                                        <td>${item.unit || 'N/A'}</td>
+                                        <td>${item.quantity || 'N/A'}</td>
+                                        <td>${item.testType || 'N/A'}</td>
+                                    `;
+                                    
+                                    // Store searchable data in the row dataset
+row.dataset.contractId = contractId;
+row.dataset.description = item.description || '';
+row.dataset.testType = item.testType || '';
+row.dataset.item = item.item || '';
+                                    
+                                    contractsTableBody.appendChild(row);
+                                });
+                            }
+                        }
+                    });
+                    
+                    // Hide loading spinner, show table
+                    loadingSpinner.style.display = 'none';
+                    contractsTable.style.display = 'table';
+                } else {
+                    // No data found
+                    loadingSpinner.style.display = 'none';
+                    contractsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #64748b;">No contract data found</td></tr>';
+                    contractsTable.style.display = 'table';
+                }
+            }).catch((error) => {
+                console.error("Error fetching contract data:", error);
+                loadingSpinner.style.display = 'none';
+                contractsTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px; color: #ef4444;">Error loading data: ${error.message}</td></tr>`;
+                contractsTable.style.display = 'table';
+            });
+        }
+
+       function filterTable() {
+    const searchInput = document.getElementById('searchInput');
+    const filter = searchInput.value.toLowerCase();
+    const rows = document.querySelectorAll('#contractsTableBody tr');
+    
+    rows.forEach(row => {
+        if (row.classList.contains('contract-group')) {
+            // For contract group rows, check if any items match
+            const contractId = row.dataset.contractId.toLowerCase();
+            let shouldShow = contractId.includes(filter);
+            
+            if (!shouldShow) {
+                // Check if any items under this contract match
+                let nextRow = row.nextElementSibling;
+                while (nextRow && nextRow.classList.contains('contract-item')) {
+                    const description = nextRow.dataset.description.toLowerCase();
+                    const testType = nextRow.dataset.testType.toLowerCase();
+                    const item = nextRow.dataset.item.toLowerCase();
+                    
+                    if (description.includes(filter) || 
+                        testType.includes(filter) || 
+                        item.includes(filter)) {
+                        shouldShow = true;
+                        break;
+                    }
+                    nextRow = nextRow.nextElementSibling;
+                }
+            }
+            
+            row.style.display = shouldShow ? '' : 'none';
+        } else if (row.classList.contains('contract-item')) {
+            // For item rows, check description, test type, and item number
+            const description = row.dataset.description.toLowerCase();
+            const testType = row.dataset.testType.toLowerCase();
+            const contractId = row.dataset.contractId.toLowerCase();
+            const item = row.dataset.item.toLowerCase();
+            
+            const shouldShow = description.includes(filter) || 
+                             testType.includes(filter) || 
+                             contractId.includes(filter) ||
+                             item.includes(filter);
+            
+            row.style.display = shouldShow ? '' : 'none';
+        }
+    });
+}
+
+        // Add event listener for search input
+        document.getElementById('searchInput').addEventListener('input', filterTable);
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            auth.signOut().then(() => {
+                window.location.href = 'index.html';
+            }).catch((error) => {
+                console.error("Logout error:", error);
+                alert("Error during logout. Please try again.");
+            });
+        });
+
+        // Check authentication state
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                fetchContractData();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quality Assurance Login</title>
+  <!-- Font Awesome for eye icon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    body {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: url('download.jpg') no-repeat center center/cover;
+    }
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 0;
+    }
+    .main-container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+    .logo-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .logo img { width: 200px; }
+    .title {
+      font-size: 60px;
+      font-weight: bold;
+      margin-top: 10px;
+      color: white;
+      text-shadow: 2px 2px 4px black;
+    }
+    .subtitle {
+      font-size: 30px;
+      margin-top: 5px;
+      color: white;
+      text-align: center;
+      text-shadow: 2px 2px 4px black;
+    }
+    .container {
+      position: relative;
+      width: 400px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(1px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 25px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+    .form.active { display: block; }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.8);
+    }
+    .password-container {
+      position: relative;
+      margin-bottom: 10px;
+    }
+    .password-container input {
+      padding-right: 35px;
+    }
+    .toggle-password {
+      position: absolute;
+      right: 10px;
+      top: 42px;
+      cursor: pointer;
+      color: #555;
+    }
+    button {
+      padding: 12px 30px;
+      background: #ff5722;
+      color: white;
+      border: none;
+      border-radius: 35px;
+      cursor: pointer;
+      font-weight: bold;
+      width: auto;
+      margin: 0 auto;
+      display: block;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    button:hover { background: #e64a19; }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .forgot-link {
+      text-align: center;
+      margin-top: 15px;
+    }
+    .forgot-link a {
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    #changeCreds {
+      display: none;
+      margin-top: 20px;
+    }
+    #changeCreds h3 {
+      text-align: center;
+      margin-bottom: 10px;
+      color: white;
+    }
+    label{
+      font-weight: bold;
+      font-size: 15px;
+      display: block;
+      margin-top: 10px;
+      color: white;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    h1{
+      text-align: center;
+      font-weight: bold;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    /* Form selection styles */
+    .form-selection {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .form-btn {
+      padding: 10px 20px;
+      margin: 10px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 80%;
+    }
+    .form-btn:hover {
+      background: #45a049;
+    }
+    .form-title {
+      color: white;
+      margin-bottom: 15px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="logo-section">
+      <img src="logo1.png" alt="Quality Assurance Logo" />
+      <div class="title">Quality Assurance Section</div>
+      <div class="subtitle">Department of Public Works and Highways<br />Samar 2nd District Engineering Office</div>
+    </div>
+
+    <div class="container">
+      <H1>Login</H1>
+      <div id="login" class="form active">
+        <label for="email">Email Address</label>
+        <input type="text" id="email" placeholder="Username(Email)" />
+        
+        <div class="password-container">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Password" />
+          <i class="fas fa-eye toggle-password" onclick="togglePassword()"></i>
+        </div>
+        
+        <button id="loginBtn" onclick="login()">
+          <span id="loginText">Login</span>
+          <span id="loginSpinner" class="spinner" style="display: none;"></span>
+        </button>
+
+        <div class="forgot-link">
+          <a onclick="forgotPassword()">Forgot Password?</a>
+        </div>
+      </div>
+
+      <!-- Form Selection (hidden by default) -->
+      <div id="formSelection" class="form-selection">
+        <h3 class="form-title">Select Form to Access</h3>
+        <!-- Buttons will be added dynamically -->
+      </div>
+
+      <!-- Change Username / Password -->
+      <div id="changeCreds">
+        <h3>Change Username / Password</h3>
+        <input type="email" id="newEmail" placeholder="New Email (Username)" />
+        <input type="password" id="newPassword" placeholder="New Password" />
+        <button onclick="updateCredentials()">Update Credentials</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDuxUQaXiWorKsz1wlpCmho2u9OQq2bAnE",
+      authDomain: "qas-section.firebaseapp.com",
+      projectId: "qas-section",
+      storageBucket: "qas-section.appspot.com",
+      messagingSenderId: "76857155340",
+      appId: "1:76857155340:web:8b497e036eb55c33607329",
+      databaseURL: "https://qas-section-default-rtdb.firebaseio.com/"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const database = firebase.database();
+
+    function showLoading() {
+      const loginBtn = document.getElementById('loginBtn');
+      const loginText = document.getElementById('loginText');
+      const loginSpinner = document.getElementById('loginSpinner');
+      
+      loginBtn.disabled = true;
+      loginText.textContent = 'Logging in...';
+      loginSpinner.style.display = 'inline-block';
+    }
+
+    function hideLoading() {
+      const loginBtn = document.getElementById('loginBtn');
+      const loginText = document.getElementById('loginText');
+      const loginSpinner = document.getElementById('loginSpinner');
+      
+      loginBtn.disabled = false;
+      loginText.textContent = 'Login';
+      loginSpinner.style.display = 'none';
+    }
+
+    function login() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!email || !password) {
+        alert("❌ Please enter both email and password");
+        return;
+      }
+
+      showLoading();
+
+      // First try to authenticate the user
+      auth.signInWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          const user = userCredential.user;
+          
+          // Special handling for admin email
+          if (email === "qasdpwh2nddeo@gmail.com" && user.uid === "2doVZ0h1jwcqvUGaVTljgcRJZfm1") {
+            // Store admin data in session storage
+            sessionStorage.setItem('currentUser', JSON.stringify({
+              email: email,
+              role: 'Admin',
+              isAdmin: true
+            }));
+            window.location.href = "admin_dashboard.html";
+            return;
+          }
+
+          // For all other users, proceed with normal authentication flow
+          // Fetch user details from the 'users' node
+          database.ref('users').orderByChild('email').equalTo(email).once('value')
+            .then(userSnapshot => {
+              if (userSnapshot.exists()) {
+                const userData = Object.values(userSnapshot.val())[0];
+                const fullName = `${userData.firstName} ${userData.lastName}`;
+                
+                // Store user data in session storage
+                sessionStorage.setItem('currentUser', JSON.stringify({
+                  firstName: userData.firstName,
+                  lastName: userData.lastName,
+                  email: userData.email,
+                  position: userData.position || 'QA Personnel'
+                }));
+
+                // Check if this user is assigned as QA In Charge in any contract
+                database.ref('contracts').orderByChild('personnel/qaInCharge/name').equalTo(fullName).once('value')
+                  .then(contractSnapshot => {
+                    if (contractSnapshot.exists()) {
+                      // User is QA In Charge for at least one contract
+                      const contracts = [];
+                      contractSnapshot.forEach(childSnapshot => {
+                        contracts.push({
+                          id: childSnapshot.key,
+                          ...childSnapshot.val()
+                        });
+                      });
+                      
+                      // Store contracts and redirect to dashboard
+                      sessionStorage.setItem('userContracts', JSON.stringify(contracts));
+                    }
+                    
+                    // Redirect to dashboard regardless of whether they have contracts
+                    window.location.href = "user_dashboard.html";
+                  })
+                  .catch(error => {
+                    console.error("Error checking contracts:", error);
+                    // Still redirect to dashboard even if contract check fails
+                    window.location.href = "user_dashboard.html";
+                  });
+              } else {
+                // User not found in users node, check if admin
+                db.collection("admins").doc(user.uid).get()
+                  .then(doc => {
+                    if (doc.exists) {
+                      window.location.href = "admin_dashboard.html";
+                    } else {
+                      // If not admin but authenticated, still allow access to user dashboard
+                      sessionStorage.setItem('currentUser', JSON.stringify({
+                        email: user.email,
+                        position: 'QA Personnel'
+                      }));
+                      window.location.href = "user_dashboard.html";
+                    }
+                  });
+              }
+            })
+            .catch(error => {
+              console.error("Error fetching user data:", error);
+              // If we can't fetch user data but auth succeeded, still allow access
+              sessionStorage.setItem('currentUser', JSON.stringify({
+                email: user.email,
+                position: 'QA Personnel'
+              }));
+              window.location.href = "user_dashboard.html";
+            });
+        })
+        .catch(error => {
+          hideLoading();
+          handleLoginError(error);
+        });
+    }
+    function handleSuccessfulLogin(uid) {
+      // Check user's access level and redirect accordingly
+      database.ref('users/' + uid).once('value')
+        .then(snapshot => {
+          if (snapshot.exists()) {
+            const userData = snapshot.val();
+            
+            if (userData.role === "admin") {
+              window.location.href = "admin_dashboard.html";
+            } 
+            else if (userData.role === "inspector") {
+              window.location.href = "inspector_form.html";
+            }
+            else if (userData.role === "contractor") {
+              window.location.href = "contractor_form.html";
+            }
+            else if (userData.accessForms && userData.accessForms.length > 0) {
+              showFormAccess(userData.accessForms);
+            }
+            else {
+              // Default redirect if no specific role or forms assigned
+              window.location.href = "user_dashboard.html";
+            }
+          } else {
+            // User authenticated but not in database (shouldn't happen with our flow)
+            window.location.href = "user_dashboard.html";
+          }
+        })
+        .catch(error => {
+          console.error("Error checking user data:", error);
+          // Default redirect if there's an error checking user data
+          window.location.href = "user_dashboard.html";
+        });
+    }
+
+    function handleLoginError(error) {
+      console.error("Login error:", error);
+      let errorMessage = "❌ Login failed: ";
+      switch (error.code) {
+        case "auth/user-not-found":
+          errorMessage += "No user found with this email";
+          break;
+        case "auth/wrong-password":
+          errorMessage += "Incorrect password";
+          break;
+        case "auth/too-many-requests":
+          errorMessage += "Too many attempts. Account temporarily locked";
+          break;
+        default:
+          errorMessage += error.message;
+      }
+      alert(errorMessage);
+    }
+
+    function showFormAccess(forms) {
+      if (forms.length === 0) {
+        window.location.href = "user_dashboard.html";
+        return;
+      }
+
+      // Hide login form
+      document.getElementById('login').style.display = 'none';
+      
+      // Show form selection
+      const formSelection = document.getElementById('formSelection');
+      formSelection.innerHTML = '<h3 class="form-title">Select Form to Access</h3>';
+      
+      // Add buttons for each form
+      forms.forEach(form => {
+        const btn = document.createElement('button');
+        btn.className = 'form-btn';
+        btn.textContent = form.name || form.formName || 'Access Form';
+        btn.onclick = () => {
+          window.location.href = form.url || form.formUrl;
+        };
+        formSelection.appendChild(btn);
+      });
+      
+      formSelection.style.display = 'block';
+    }
+
+    function togglePassword() {
+      const passwordInput = document.getElementById('password');
+      const icon = document.querySelector('.toggle-password');
+      if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        passwordInput.type = "password";
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+
+    function forgotPassword() {
+      const email = prompt("Enter your email to receive password reset instructions:");
+      if (email) {
+        auth.sendPasswordResetEmail(email)
+          .then(() => {
+            alert("📧 Password reset email sent. Please check your inbox.");
+          })
+          .catch(error => {
+            alert("❌ Error: " + error.message);
+          });
+      }
+    }
+
+    function updateCredentials() {
+      const newEmail = document.getElementById('newEmail').value.trim();
+      const newPassword = document.getElementById('newPassword').value.trim();
+      const user = auth.currentUser;
+
+      if (!user) {
+        alert("❌ You must be logged in to change credentials.");
+        return;
+      }
+
+      if (newEmail) {
+        user.updateEmail(newEmail)
+          .then(() => {
+            alert("✅ Email (username) updated successfully.");
+          })
+          .catch(error => {
+            alert("❌ Failed to update email: " + error.message);
+          });
+      }
+
+      if (newPassword) {
+        user.updatePassword(newPassword)
+          .then(() => {
+            alert("✅ Password updated successfully.");
+          })
+          .catch(error => {
+            alert("❌ Failed to update password: " + error.message);
+          });
+      }
+    }
+
+    
+
+    // Prevent back navigation if logged out
+    if (sessionStorage.getItem('loggedOut')) {
+      // Clear sessionStorage so it doesn't persist
+      sessionStorage.clear();
+      // Redirect to sign-up page if attempted to go back
+      window.location.replace("index.html");
+    }
+
+    // Add event listener for Enter key to trigger login
+    document.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        login();
+      }
+    });
+  </script>
+</body>
+</html>

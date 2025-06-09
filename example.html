@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Multi-Value Field</title>
+  <style>
+    .tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      border: 1px solid #ccc;
+      padding: 8px;
+      border-radius: 5px;
+      min-height: 40px;
+    }
+
+    .tag {
+      background-color: #007bff;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+    }
+
+    .tag span {
+      margin-left: 8px;
+      cursor: pointer;
+    }
+
+    #tagInput {
+      border: none;
+      outline: none;
+      flex-grow: 1;
+      padding: 5px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<h3>Materials Used</h3>
+<div class="tag-container" id="tagContainer">
+  <input type="text" id="tagInput" placeholder="Add material and press Enter">
+</div>
+
+<script>
+  const tagContainer = document.getElementById('tagContainer');
+  const tagInput = document.getElementById('tagInput');
+  let tags = [];
+
+  tagInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && tagInput.value.trim() !== '') {
+      e.preventDefault();
+      addTag(tagInput.value.trim());
+      tagInput.value = '';
+    }
+  });
+
+  function addTag(text) {
+    if (tags.includes(text)) return;
+
+    tags.push(text);
+
+    const tagEl = document.createElement('div');
+    tagEl.className = 'tag';
+    tagEl.innerHTML = `${text}<span onclick="removeTag('${text}')">&times;</span>`;
+    tagContainer.insertBefore(tagEl, tagInput);
+  }
+
+  window.removeTag = function(text) {
+    tags = tags.filter(tag => tag !== text);
+    renderTags();
+  };
+
+  function renderTags() {
+    tagContainer.innerHTML = '';
+    tags.forEach(tag => {
+      const tagEl = document.createElement('div');
+      tagEl.className = 'tag';
+      tagEl.innerHTML = `${tag}<span onclick="removeTag('${tag}')">&times;</span>`;
+      tagContainer.appendChild(tagEl);
+    });
+    tagContainer.appendChild(tagInput);
+  }
+</script>
+
+</body>
+</html>

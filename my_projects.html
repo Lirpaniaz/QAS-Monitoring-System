@@ -1,0 +1,2084 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <!-- ExcelJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+
+  <title>My Projects</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      display: flex;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+
+    .sidebar {
+      width: 250px;
+      background-color: #1c1c64;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px 0;
+    }
+
+    .sidebar h3 {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 0 10px;
+      font-size: 25px;
+    }
+
+    .menu {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 0 10px;
+      gap: 10px;
+    }
+    .menu a.active {
+  background-color: #da471f !important;
+}
+
+    .menu a,
+    .dropdown-btn {
+      color: white;
+      text-decoration: none;
+      padding: 15px;
+      cursor: pointer;
+      font-size: 18px;
+      border-radius: 10px;
+      background-color: #1c1c64;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+      text-align: center;
+      transition: background-color 0.3s ease;
+    }
+
+    .menu a:hover,
+    .dropdown-btn:hover {
+      background-color: #da471f;
+    }
+
+    .dropdown-container {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .dropdown-container a {
+      font-size: 16px;
+      padding: 12px;
+      background-color: #1c1c64;
+      color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .dropdown-container a:hover {
+      background-color: #da471f;
+    }
+
+    .logout-btn {
+      margin-top: auto;
+      padding: 12px;
+      background-color: red;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin: 20px;
+      border-radius: 10px;
+      font-size: 16px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .logout-btn:hover {
+      background-color: #e04a22;
+    }
+
+    .main {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .logo {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 120px;
+      height: auto;
+      border-radius: 50%;
+    }
+
+    .add-user-button {
+      background-color: #da471f;
+      color: white;
+      margin-top: 10px;
+      padding: 12px 20px;
+      border: none;
+      cursor: pointer;
+      border-radius: 30px;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .add-user-button:hover {
+      background-color: #c03d1b;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      background-color: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    th,
+    td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+
+    .actions i {
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    .title-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .search-container {
+      display: flex;
+      align-items: center;
+      background-color: white;
+      border-radius: 30px;
+      padding: 8px 15px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      width: 300px;
+    }
+
+    .search-container input {
+      border: none;
+      outline: none;
+      flex-grow: 1;
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    .search-container i {
+      color: #6f6f6f;
+      margin-right: 8px;
+    }
+
+    .download-all-btn {
+      display: flex;
+      align-items: center;
+      background-color: #c03d1b;
+      color: white;
+      border: none;
+      border-radius: 30px;
+      padding: 8px 15px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 10px;
+      transition: background-color 0.3s ease;
+    }
+
+    .download-all-btn:hover {
+      background-color: #151547;
+    }
+
+    .download-all-btn i {
+      margin-right: 5px;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      overflow: auto;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 25px;
+      border-radius: 14px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      position: relative;
+      animation: fadeIn 0.3s ease-in-out;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      position: sticky;
+      background-color: white;
+      z-index: 10;
+      padding: 20px 0;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .modal-header h2 {
+      color: #1c1c64;
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    .close {
+      font-size: 28px;
+      font-weight: bold;
+      color: #999;
+      cursor: pointer;
+      transition: color 0.2s ease;
+      line-height: 1;
+      padding: 0 0 0 10px;
+    }
+
+    .close:hover {
+      color: #000;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    .form-group input:disabled {
+      background-color: #f5f5f5;
+      color: #666;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: #1c1c64;
+      box-shadow: 0 0 0 3px rgba(28, 28, 100, 0.15);
+      outline: none;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 10px;
+      padding-top: 15px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .form-actions button {
+      padding: 10px 18px;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.3s ease;
+    }
+
+    .cancel-btn {
+      background-color: #e6e6e6;
+      color: #333;
+    }
+
+    .cancel-btn:hover {
+      background-color: #ccc;
+      transform: translateY(-1px);
+    }
+
+    .submit-btn {
+      background-color: #1c1c64;
+      color: #fff;
+    }
+
+    .submit-btn:hover {
+      background-color: #151547;
+      transform: translateY(-1px);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .form-actions {
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .form-actions button {
+      width: 100%;
+    }
+
+    .contract-card {
+      background-color: #f0f0f0;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 20px auto;
+      max-width: 1100px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .no-projects {
+      background-color: #f0f0f0;
+      border-radius: 12px;
+      padding: 40px;
+      margin: 20px auto;
+      max-width: 1500px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      color: #666;
+      font-size: 18px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+    }
+
+    .download-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    .share-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    .download-btn i {
+      font-size: 20px;
+      color: #1c1c64;
+    }
+
+    .share-btn i {
+      font-size: 20px;
+      color: #1c1c64;
+    }
+
+    .scroll-container {
+      display: flex;
+      overflow-x: auto;
+      gap: 12px;
+      scroll-behavior: smooth;
+      padding-bottom: 15px;
+    }
+
+    .scroll-container::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb {
+      background: #6f6f6f;
+      border-radius: 4px;
+    }
+
+    .scroll-container::-webkit-scrollbar-track {
+      background: #ccc;
+      border-radius: 4px;
+    }
+
+    /* Each column contains 2 items */
+    .scroll-column {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      flex: 0 0 auto;
+      min-width: 240px;
+    }
+
+    /* Style for each item box */
+    .section-item {
+      background: #fff;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .section-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    .menu-icon {
+      font-size: 18px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    /* Basic Contract Info Modal */
+    #basicContractModal .modal-content {
+      max-width: 600px;
+    }
+
+    #basicContractModal .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #basicContractModal .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    #basicContractModal .form-row .form-group {
+      flex: 1;
+    }
+
+    /* Share Project Modal */
+    #shareProjectModal .modal-content {
+      max-width: 500px;
+    }
+
+    #shareProjectModal .user-list {
+      max-height: 300px;
+      overflow-y: auto;
+      margin: 15px 0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+
+    #shareProjectModal .user-item {
+      padding: 12px 15px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    #shareProjectModal .user-item:hover {
+      background-color: #f5f5f5;
+    }
+
+
+    #shareProjectModal .search-users {
+      margin-bottom: 15px;
+    }
+    #shareProjectModal .user-item.selected {
+  background-color: #e6f2ff;
+  position: relative;
+}
+
+#shareProjectModal .user-item.selected::after {
+  content: "✓";
+  position: absolute;
+  right: 15px;
+  color: #1c1c64;
+  font-weight: bold;
+
+}
+@keyframes highlight-blink {
+  0% { background-color: #b3d5f9; }
+  50% { background-color: rgb(213, 221, 245); }
+  100% { background-color: #b3d5f9; }
+}
+
+.highlight-blink {
+  animation: highlight-blink 1s ease 3;
+  border-radius: 12px;
+  padding: 5px;
+}
+
+
+
+.contract-card {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* Checkmark styling */
+.section-item .menu-icon {
+  margin-left: 8px;
+  color: #666;
+}
+
+.section-item[style*="color: rgb(76, 175, 80)"] .menu-icon {
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+/* Make sure checkmarks appear properly */
+.section-item.completed::after,
+.section-item .menu-icon {
+  transition: all 0.3s ease;
+}
+/* Add this to your CSS */
+input[type="date"] {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: Arial, sans-serif;
+}
+
+input[type="date"]:focus {
+  border-color: #1c1c64;
+  outline: none;
+}
+
+#ntpDuration {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-functions-compat.js"></script>
+</head>
+
+<body>
+  <div class="sidebar">
+    <div>
+      <h3>QUALITY<br>ASSURANCE<br>SECTION</h3>
+      <div class="menu">
+        <a href="user_dashboard.html">Dashboard</a>
+        <a href="my_projects.html">My Projects</a>
+        <a href="shared_project.html">Shared Projects</a>
+        <a href="files_user.html">Files</a>
+      </div>
+    </div>
+    <button class="logout-btn" id="logout-btn">LOG OUT</button>
+  </div>
+
+  <div class="main">
+    <div class="title-bar">
+      <h1>MY PROJECT/S</h1>
+      <div style="display: flex; align-items: center;">
+        <div class="search-container">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" placeholder="Search projects...">
+        </div>
+        <button class="download-all-btn" id="downloadAllBtn">
+          <i class="fas fa-download"></i> Download All
+        </button>
+      </div>
+    </div>
+
+    <!-- Container for contract cards will be populated by JavaScript -->
+    <div id="contractsContainer"></div>
+  </div>
+
+  <!-- Basic Contract Information Modal -->
+  <div id="basicContractModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Basic Contract Information</h2>
+        <span class="close" onclick="closeModal('basicContractModal')">&times;</span>
+      </div>
+      <form id="basicContractForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="contractId">Contract ID</label>
+            <input type="text" id="contractId" name="contractId" disabled>
+          </div>
+          <div class="form-group">
+            <label for="contractor">Contractor</label>
+            <input type="text" id="contractor" name="contractor" disabled>
+          </div>
+         
+        </div>
+        
+        <div class="form-group">
+          <label for="contractName">Contract Name</label>
+          <input type="text" id="contractName" name="contractName" disabled>
+        </div>
+        <div class="form-group">
+          <label for="location">Location</label>
+          <input type="text" id="location" name="location" disabled>
+        </div>
+      
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="appropriation">Appropriation</label>
+            <input type="text" id="appropriation" name="appropriation">
+          </div>
+          <div class="form-group">
+            <label for="approvedBudgetCost">Approved Budget Cost</label>
+            <input type="text" id="approvedBudgetCost" name="approvedBudgetCost">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="contractAmount">Contract Amount</label>
+            <input type="text" id="contractAmount" name="contractAmount">
+          </div>
+          <div class="form-group">
+            <label for="revisedContractAmount">Revised Contract Amount</label>
+            <input type="text" id="revisedContractAmount" name="revisedContractAmount">
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="cancel-btn" onclick="closeModal('basicContractModal')">Cancel</button>
+          <button type="button" class="submit-btn" id="saveBasicContractBtn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- Add this modal after your other modals -->
+<div id="noticeToProceedModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Notice to Proceed Details</h2>
+      <span class="close" onclick="closeModal('noticeToProceedModal')">&times;</span>
+    </div>
+    <form id="noticeToProceedForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="ntpStartDate">Start Date</label>
+          <input type="date" id="ntpStartDate" name="ntpStartDate" required>
+        </div>
+        <div class="form-group">
+          <label for="ntpExpiryDate">Expiry Date</label>
+          <input type="date" id="ntpExpiryDate" name="ntpExpiryDate" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="ntpDuration">Duration (days)</label>
+        <input type="text" id="ntpDuration" name="ntpDuration" readonly>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="cancel-btn" onclick="closeModal('noticeToProceedModal')">Cancel</button>
+        <button type="button" class="submit-btn" id="saveNtpBtn">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+  <!-- Share Project Modal -->
+  <div id="shareProjectModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Share Project</h2>
+        <span class="close" onclick="closeModal('shareProjectModal')">&times;</span>
+      </div>
+      <div class="form-group search-users">
+        <input type="text" id="userSearchInput" placeholder="Search users..." oninput="filterUsers()">
+      </div>
+      <div class="user-list" id="userList">
+        <!-- User list will be populated here -->
+      </div>
+      <div class="form-actions">
+        <button type="button" class="cancel-btn" onclick="closeModal('shareProjectModal')">Cancel</button>
+        <button type="button" class="submit-btn" id="shareProjectBtn">Share</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDuxUQaXiWorKsz1wlpCmho2u9OQq2bAnE",
+      authDomain: "qas-section.firebaseapp.com",
+      databaseURL: "https://qas-section-default-rtdb.firebaseio.com/",
+      projectId: "qas-section",
+      storageBucket: "qas-section.appspot.com",
+      messagingSenderId: "76857155340",
+      appId: "1:76857155340:web:8b497e036eb55c33607329"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const auth = firebase.auth();
+    const functions = firebase.functions();
+    const usersRef = database.ref('users');
+    const contractsRef = database.ref('contracts');
+    const userContractsRef = database.ref('userContracts');
+
+    // DOM elements
+    const contractsContainer = document.getElementById('contractsContainer');
+    const logoutBtn = document.getElementById('logout-btn');
+    const searchInput = document.getElementById('searchInput');
+    const downloadAllBtn = document.getElementById('downloadAllBtn');
+    const saveBasicContractBtn = document.getElementById('saveBasicContractBtn');
+    const shareProjectBtn = document.getElementById('shareProjectBtn');
+    const userList = document.getElementById('userList');
+    const userSearchInput = document.getElementById('userSearchInput');
+
+    // Current user data
+    let currentUser = null;
+    let currentUserName = '';
+    let currentUserContracts = [];
+    let currentContractKey = '';
+    let allUsers = [];
+    let selectedUserIds = [];
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function () {
+      checkAuthState();
+      setupEventListeners();
+    });
+
+    // Highlight the current page in the sidebar
+    function highlightCurrentPage() {
+      const currentPage = window.location.pathname.split('/').pop() || 'my_projects.html';
+      const menuLinks = document.querySelectorAll('.menu a');
+      
+      menuLinks.forEach(link => {
+        const linkPage = link.getAttribute('href');
+        if (linkPage === currentPage) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+    }
+
+    // Call the function when the page loads
+    highlightCurrentPage();
+
+    // Check authentication state
+    function checkAuthState() {
+      auth.onAuthStateChanged(user => {
+        if (!user) {
+          window.location.href = 'index.html';
+        } else {
+          currentUser = user;
+          loadUserData(user.uid);
+        }
+      });
+    }
+
+    // Load user data and then their contracts
+    function loadUserData(userId) {
+      usersRef.orderByChild('uid').equalTo(userId).once('value')
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            const userData = Object.values(snapshot.val())[0];
+            currentUserName = userData.firstName + " " + userData.lastName;
+            loadUserProjects();
+            loadAllUsers(); // Load all users for sharing functionality
+          } else {
+            console.warn("User not found");
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching user data:", error);
+        });
+    }
+
+    function loadUserProjects() {
+  if (!currentUserName) {
+    console.error("User name not available");
+    return;
+  }
+
+  console.log("Searching for projects where personnel/qaInCharge/name =", currentUserName);
+
+  // Query contracts where personnel.qaInCharge.name equals currentUserName
+  contractsRef.orderByChild('personnel/qaInCharge/name')
+              .equalTo(currentUserName)
+              .once('value')
+    .then((snapshot) => {
+      const projects = snapshot.val();
+      currentUserContracts = projects ? 
+        Object.keys(projects).map(key => ({
+          ...projects[key],
+          firebaseKey: key
+        })) : [];
+      
+      console.log("Found matching projects:", currentUserContracts);
+      displayProjects(currentUserContracts);
+      
+      // Add this to check status after projects are loaded
+      currentUserContracts.forEach(project => {
+        checkSectionStatus(project.firebaseKey);
+      });
+    })
+    .catch((error) => {
+      console.error("Error loading projects:", error);
+      displayProjects([]);
+    });
+}
+
+    function loadAllUsers() {
+  usersRef.once('value')
+    .then((snapshot) => {
+      const users = snapshot.val();
+      allUsers = users ? Object.values(users) : []; // Get array of users directly
+      populateUserList(allUsers);
+    })
+    .catch((error) => {
+      console.error("Error loading users:", error);
+    });
+}
+
+    function populateUserList(users) {
+  userList.innerHTML = '';
+  users.forEach(user => {
+    if (user.uid !== currentUser.uid) { // Don't show current user in the list
+      const userItem = document.createElement('div');
+      userItem.className = 'user-item';
+      userItem.dataset.userId = user.uid; // Use uid instead of id for consistency
+      userItem.innerHTML = `${user.firstName} ${user.lastName}`; // Combined first and last name
+      userItem.addEventListener('click', () => selectUser(user.uid));
+      userList.appendChild(userItem);
+    }
+  });
+}
+
+function filterUsers() {
+  const searchTerm = userSearchInput.value.toLowerCase();
+  const filteredUsers = allUsers.filter(user => {
+    const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+    return fullName.includes(searchTerm);
+  });
+  populateUserList(filteredUsers);
+}
+
+function selectUser(userId) {
+  const userItem = document.querySelector(`.user-item[data-user-id="${userId}"]`);
+  
+  if (userItem) {
+    // Toggle selection
+    userItem.classList.toggle('selected');
+    
+    // Update selected users array
+    const index = selectedUserIds.indexOf(userId);
+    if (index === -1) {
+      // Add to selection if not already selected
+      selectedUserIds.push(userId);
+    } else {
+      // Remove from selection if already selected
+      selectedUserIds.splice(index, 1);
+    }
+  }
+}
+
+function shareProjectWithUser() {
+  if (selectedUserIds.length === 0 || !currentContractKey) {
+    alert('Please select at least one user to share with');
+    return;
+  }
+
+  // Get the contract data
+  contractsRef.child(currentContractKey).once('value')
+    .then((snapshot) => {
+      const contractData = snapshot.val();
+      if (!contractData) {
+        alert('Contract data not found');
+        return;
+      }
+
+      // Create share data for userContracts
+      const shareData = {
+        contractId: contractData.contractId,
+        contractName: contractData.contractName,
+        sharedBy: currentUserName,
+        sharedByUid: currentUser.uid,
+        sharedAt: new Date().toISOString()
+      };
+
+      // Create updates object for Firebase
+      const updates = {};
+      
+      // Add to userContracts for each selected user
+      selectedUserIds.forEach(userId => {
+        updates[`userContracts/${userId}/${currentContractKey}`] = shareData;
+      });
+
+      // Create sharedProject object in contracts node
+      const sharedProjectData = {};
+      selectedUserIds.forEach(userId => {
+        const user = allUsers.find(u => u.uid === userId);
+        if (user) {
+          sharedProjectData[userId] = {
+            name: `${user.firstName} ${user.lastName}`,
+            sharedAt: new Date().toISOString()
+          };
+        }
+      });
+
+      // Add sharedProject data to updates
+      updates[`contracts/${currentContractKey}/sharedProject`] = sharedProjectData;
+
+      // Execute all updates in a single transaction
+      return database.ref().update(updates);
+    })
+    .then(() => {
+      // Get names of selected users
+      const userNames = selectedUserIds.map(id => {
+        const user = allUsers.find(u => u.uid === id);
+        return user ? `${user.firstName} ${user.lastName}` : '';
+      }).filter(name => name !== '');
+      
+      alert(`Project successfully shared with: ${userNames.join(', ')}`);
+      closeModal('shareProjectModal');
+      
+      // Reset selections
+      selectedUserIds = [];
+      document.querySelectorAll('.user-item.selected').forEach(el => {
+        el.classList.remove('selected');
+      });
+    })
+    .catch((error) => {
+      console.error('Error sharing project:', error);
+      alert('Error sharing project');
+    });
+}
+
+function shareProjectWithUser() {
+  if (selectedUserIds.length === 0 || !currentContractKey) {
+    alert('Please select at least one user to share with');
+    return;
+  }
+
+  // Get the contract data
+  contractsRef.child(currentContractKey).once('value')
+    .then((snapshot) => {
+      const contractData = snapshot.val();
+      if (!contractData) {
+        alert('Contract data not found');
+        return;
+      }
+
+      // Create share data
+      const shareData = {
+        contractId: contractData.contractId,
+        contractName: contractData.contractName,
+        sharedBy: currentUserName,
+        sharedByUid: currentUser.uid,
+        sharedAt: new Date().toISOString()
+      };
+
+      // Create an array of promises for sharing with each user
+      const sharePromises = selectedUserIds.map(userId => {
+        return userContractsRef.child(userId).child(currentContractKey).set(shareData);
+      });
+
+      // Execute all share operations
+      return Promise.all(sharePromises);
+    })
+    .then(() => {
+      // Get names of selected users
+      const userNames = selectedUserIds.map(id => {
+        const user = allUsers.find(u => u.uid === id);
+        return user ? `${user.firstName} ${user.lastName}` : '';
+      }).filter(name => name !== '');
+      
+      alert(`Project successfully shared with: ${userNames.join(', ')}`);
+      closeModal('shareProjectModal');
+      
+      // Reset selections
+      selectedUserIds = [];
+      document.querySelectorAll('.user-item.selected').forEach(el => {
+        el.classList.remove('selected');
+      });
+    })
+    .catch((error) => {
+      console.error('Error sharing project:', error);
+      alert('Error sharing project');
+    });
+}
+
+function displayProjects(projects) {
+  if (!projects || projects.length === 0) {
+    contractsContainer.innerHTML = `
+      <div class="no-projects">
+        <p>No projects assigned yet.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  contractsContainer.innerHTML = '';
+  
+  projects.forEach(project => {
+    const contractCard = document.createElement('div');
+    contractCard.className = 'contract-card';
+    contractCard.innerHTML = `
+      <div class="card-header">
+        <h3>${project.contractId || 'Contract ID: N/A'}</h3>
+        <div>
+          <button class="share-btn" title="Share Project" onclick="openShareModal('${project.firebaseKey || project.contractId}')">
+            <i class="fa-solid fa-share-nodes"></i>
+          </button>
+          <button class="download-btn" title="Download Excel" onclick="downloadContractAsExcel('${project.firebaseKey || project.contractId}')">
+            <i class="fa-solid fa-download"></i>
+          </button>
+        </div>
+      </div>
+      <div class="scroll-container">
+        <div class="scroll-column">
+           <div class="section-item" onclick="showBasicContractInfo('${project.firebaseKey}')">Basic Contract Information<span class="menu-icon">⋮</span></div>
+          <div class="section-item" data-section="pdo" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'pdo')">
+  Project Designation Order (PDO)<span class="menu-icon">⋮</span>
+  </div>
+          </div>
+          <div class="scroll-column">
+            <div class="section-item" onclick="showNoticeToProceedInfo('${project.firebaseKey}')">Notice to Proceed <span class="menu-icon">⋮</span></div>
+            <div class="section-item" data-section="programOfWorks" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'programOfWorks')">Program of Works<span class="menu-icon">⋮</span></div>
+          </div>
+          <div class="scroll-column">
+            <div class="section-item" data-section="plans" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'plans')">Plans<span class="menu-icon">⋮</span></div>
+            <div class="section-item" data-section="qualityControlProgram" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'qualityControlProgram')">
+    QCP <span class="menu-icon">⋮</span>
+  </div>
+        </div>
+        <div class="scroll-column">
+          <div class="section-item" data-section="designMix" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'designMix')">Design Mix<span class="menu-icon">⋮</span></div>
+          <div class="section-item" data-section="pertCpmGantt" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'pertCpmGantt')">PERT/CPM Gantt Chart<span class="menu-icon">⋮</span></div>
+        </div>
+        <div class="scroll-column">
+          <div class="section-item" data-section="cqca" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'cqca')">CQCA<span class="menu-icon">⋮</span></div>
+          <div class="section-item" data-section="materialsLogbook" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'materialsLogbook')">Materials Logbook<span class="menu-icon">⋮</span></div>
+        </div>
+        <div class="scroll-column">
+          <div class="section-item" data-section="materialsTestingReport" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'materialsTestingReport')">Materials Testing Report<span class="menu-icon">⋮</span></div>
+          <div class="section-item" data-section="statusOfTest" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'statusOfTest')">Status of Test<span class="menu-icon">⋮</span></div>
+        </div>
+        <div class="scroll-column">
+          <div class="section-item" data-section="summaryOfFieldTest" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'summaryOfFieldTest')">Summary of Field Test<span class="menu-icon">⋮</span></div>
+          <div class="section-item" data-section="reportOnConcretingWorks" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'reportOnConcretingWorks')">Report on Concreting Works<span class="menu-icon">⋮</span></div>
+        </div>
+        <div class="scroll-column">
+          <div class="section-item" data-section="concretePouringPermits" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'concretePouringPermits')">Concrete Pouring Permits<span class="menu-icon">⋮</span></div>
+          <div class="section-item" data-section="asphaltConcretePavement" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'asphaltConcretePavement')">Asphalt Concrete Pavement Notice to Lay<span class="menu-icon">⋮</span></div>
+        </div>
+        <div class="scroll-column">
+          <div class="section-item" data-section="siteInstructions" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'siteInstructions')">Site Instructions<span class="menu-icon">⋮</span></div>
+          <div class="section-item" data-section="variationOrder" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'variationOrder')">Variation Order<span class="menu-icon">⋮</span></div>
+        </div>
+        <div class="scroll-column">
+          <div class="section-item" data-section="timeSuspensionReport" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'timeSuspensionReport')">Time Suspension Report<span class="menu-icon">⋮</span></div>
+          <div class="section-item" data-section="timeExtensionReport" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'timeExtensionReport')">Time Extension Report<span class="menu-icon">⋮</span></div>
+        </div>
+        <div class="scroll-column">
+          <div class="section-item" data-section="resumptionOrder" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'resumptionOrder')">Resumption Order<span class="menu-icon">⋮</span></div>
+          <div class="section-item" data-section="statementOfWorkAccomplishment" data-contract="${project.firebaseKey}" onclick="navigateToFiles('${project.firebaseKey}', 'statementOfWorkAccomplishment')">Statement of Work Accomplishment<span class="menu-icon">⋮</span></div>
+        </div>
+      </div>
+    `;
+    
+    contractsContainer.appendChild(contractCard);
+    
+    // Check for existing files and add checkmarks
+    checkSectionStatus(project.firebaseKey);
+      setTimeout(initContractHighlighting, 300);
+  });
+
+    document.getElementById('contractsContainer').addEventListener('click', function(e) {
+    const sectionItem = e.target.closest('.section-item');
+    if (sectionItem) {
+      const contractId = sectionItem.dataset.contract;
+      const section = sectionItem.dataset.section;
+      
+      if (contractId && section) {
+        navigateToFiles(contractId, section);
+      }
+    }
+  });
+}
+
+// Add this function to navigate to files page with the correct section
+function navigateToFiles(contractId, section) {
+  // Store the contract ID and section in localStorage
+  localStorage.setItem('targetContract', contractId);
+  localStorage.setItem('targetSection', section);
+  
+  // Navigate to files page
+  window.location.href = 'files_user.html';
+}
+// Add this function to check if sections have content and add checkmarks
+function checkSectionStatus(contractId) {
+  contractsRef.child(contractId).once('value').then(snapshot => {
+    const contractData = snapshot.val();
+    if (!contractData) return;
+
+    // Check Notice to Proceed
+    const ntpItem = document.querySelector(`.section-item[data-contract="${contractId}"][data-section="noticeToProceed"]`);
+    if (ntpItem) {
+      const hasNtpData = contractData.noticeToProceed && 
+                        contractData.noticeToProceed.startDate && 
+                        contractData.noticeToProceed.expiryDate;
+      
+      // Replace the menu icon with checkmark if data exists
+      const currentContent = ntpItem.innerHTML;
+      const newContent = hasNtpData ? 
+        currentContent.replace('⋮', '✓').replace('✓', '✓') : // Ensure only one replacement
+        currentContent.replace('✓', '⋮');
+      
+      ntpItem.innerHTML = newContent;
+      ntpItem.style.color = hasNtpData ? '#4CAF50' : '';
+    }
+
+    // Check Basic Contract Information
+    const basicContractItem = document.querySelector(`.section-item[data-contract="${contractId}"][data-section="basicContractInfo"]`);
+    if (basicContractItem) {
+      const requiredFields = [
+        'contractId',
+        'contractName',
+        'location',
+        'contractor',
+        'appropriation',
+        'approvedBudgetCost',
+        'contractAmount',
+        'revisedContractAmount'
+      ];
+
+      const allFieldsFilled = requiredFields.every(field => 
+        contractData[field] && contractData[field].toString().trim() !== ''
+      );
+
+      // Replace the menu icon with checkmark if all fields are filled
+      const currentContent = basicContractItem.innerHTML;
+      const newContent = allFieldsFilled ? 
+        currentContent.replace('⋮', '✓').replace('✓', '✓') : // Ensure only one replacement
+        currentContent.replace('✓', '⋮');
+      
+      basicContractItem.innerHTML = newContent;
+      basicContractItem.style.color = allFieldsFilled ? '#4CAF50' : '';
+    }
+
+    // Check other sections for files (existing implementation)
+    const folderRef = database.ref('folders').orderByChild('contractId').equalTo(contractId);
+    folderRef.once('value').then(folderSnapshot => {
+      if (folderSnapshot.exists()) {
+        const folderId = Object.keys(folderSnapshot.val())[0];
+        
+        // Check other sections for files
+        const otherSections = [
+          'pdo', 'programOfWorks', 'plans', 'qualityControlProgram',
+          'designMix', 'pertCpmGantt', 'cqca', 'materialsLogbook',
+          'materialsTestingReport', 'statusOfTest', 'summaryOfFieldTest',
+          'reportOnConcretingWorks', 'concretePouringPermits',
+          'asphaltConcretePavement', 'siteInstructions', 'variationOrder',
+          'timeSuspensionReport', 'timeExtensionReport', 'resumptionOrder',
+          'statementOfWorkAccomplishment'
+        ];
+        
+        otherSections.forEach(section => {
+          database.ref(`folderDocuments/${folderId}/${section}`).once('value').then(sectionSnapshot => {
+            if (sectionSnapshot.exists()) {
+              const sectionItem = document.querySelector(`.section-item[data-contract="${contractId}"][data-section="${section}"]`);
+              if (sectionItem) {
+                const currentContent = sectionItem.innerHTML;
+                const newContent = currentContent.replace('⋮', '✓').replace('✓', '✓');
+                sectionItem.innerHTML = newContent;
+                sectionItem.style.color = '#4CAF50';
+              }
+            }
+          });
+        });
+      }
+    });
+  });
+}
+
+
+
+// Add this function to check if sections have content and add checkmarks
+function checkSectionStatus(contractId) {
+  const folderRef = database.ref('folders').orderByChild('contractId').equalTo(contractId);
+  
+  folderRef.once('value').then(folderSnapshot => {
+    if (folderSnapshot.exists()) {
+      const folderData = Object.values(folderSnapshot.val())[0];
+      const folderId = Object.keys(folderSnapshot.val())[0];
+      
+      // Check each section for files
+      const sections = [
+        'basicContractInfo', 'pdo', 'noticeToProceed', 'programOfWorks', 
+        'plans', 'qualityControlProgram', 'designMix', 'pertCpmGantt',
+        'cqca', 'materialsLogbook', 'materialsTestingReport', 'statusOfTest',
+        'summaryOfFieldTest', 'reportOnConcretingWorks', 'concretePouringPermits',
+        'asphaltConcretePavement', 'siteInstructions', 'variationOrder',
+        'timeSuspensionReport', 'timeExtensionReport', 'resumptionOrder',
+        'statementOfWorkAccomplishment'
+      ];
+      
+      sections.forEach(section => {
+        database.ref(`folderDocuments/${folderId}/${section}`).once('value').then(snapshot => {
+          if (snapshot.exists()) {
+            // Find the corresponding section-item and add checkmark
+            const sectionItem = document.querySelector(`.section-item[data-contract="${contractId}"][data-section="${section}"]`);
+            if (sectionItem) {
+              sectionItem.innerHTML = sectionItem.innerHTML.replace('⋮', '✓');
+              sectionItem.style.color = '#4CAF50'; // Green color for completed items
+            }
+          }
+        });
+      });
+    }
+  });
+}
+
+    function openShareModal(contractKey) {
+  currentContractKey = contractKey;
+  selectedUserIds = []; // Reset selected users array
+  
+  // Clear any previous selection
+  document.querySelectorAll('.user-item.selected').forEach(el => {
+    el.classList.remove('selected');
+  });
+  
+  // Clear search
+  userSearchInput.value = '';
+  filterUsers();
+  
+  document.getElementById('shareProjectModal').style.display = 'block';
+}
+
+    // Show basic contract information modal
+    function showBasicContractInfo(contractKey) {
+      currentContractKey = contractKey;
+      const modal = document.getElementById('basicContractModal');
+      
+      // Get contract data from Firebase
+      contractsRef.child(contractKey).once('value')
+        .then((snapshot) => {
+          const contractData = snapshot.val();
+          if (contractData) {
+            // Populate the form with contract data
+            document.getElementById('contractId').value = contractData.contractId || '';
+            document.getElementById('contractName').value = contractData.contractName || '';
+            document.getElementById('location').value = contractData.location || '';
+            document.getElementById('contractor').value = contractData.contractor || '';
+            document.getElementById('appropriation').value = contractData.appropriation || '';
+            document.getElementById('approvedBudgetCost').value = contractData.approvedBudgetCost || '';
+            document.getElementById('contractAmount').value = contractData.contractAmount || '';
+            document.getElementById('revisedContractAmount').value = contractData.revisedContractAmount || '';
+            
+            // Show the modal
+            modal.style.display = 'block';
+          } else {
+            alert('Contract data not found');
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching contract data:', error);
+          alert('Error loading contract information');
+        });
+    }
+
+    // Add this function to handle Notice to Proceed click
+function showNoticeToProceedInfo(contractKey) {
+  currentContractKey = contractKey;
+  const modal = document.getElementById('noticeToProceedModal');
+  
+  // Clear previous values
+  document.getElementById('ntpStartDate').value = '';
+  document.getElementById('ntpExpiryDate').value = '';
+  document.getElementById('ntpDuration').value = '';
+  
+  // Load existing data if available
+  contractsRef.child(contractKey).once('value')
+    .then((snapshot) => {
+      const contractData = snapshot.val();
+      if (contractData && contractData.noticeToProceed) {
+        document.getElementById('ntpStartDate').value = contractData.noticeToProceed.startDate || '';
+        document.getElementById('ntpExpiryDate').value = contractData.noticeToProceed.expiryDate || '';
+        calculateDuration();
+      }
+    });
+  
+  // Show the modal
+  modal.style.display = 'block';
+  
+  // Add event listeners for date changes
+  document.getElementById('ntpStartDate').addEventListener('change', calculateDuration);
+  document.getElementById('ntpExpiryDate').addEventListener('change', calculateDuration);
+}
+
+// Function to calculate duration between dates
+function calculateDuration() {
+  const startDate = document.getElementById('ntpStartDate').value;
+  const expiryDate = document.getElementById('ntpExpiryDate').value;
+  
+  if (startDate && expiryDate) {
+    const start = new Date(startDate);
+    const end = new Date(expiryDate);
+    
+    // Calculate difference in days
+    const diffTime = Math.abs(end - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    
+    document.getElementById('ntpDuration').value = diffDays;
+  } else {
+    document.getElementById('ntpDuration').value = '';
+  }
+}
+
+// Function to save Notice to Proceed data
+function saveNoticeToProceed() {
+  const startDate = document.getElementById('ntpStartDate').value;
+  const expiryDate = document.getElementById('ntpExpiryDate').value;
+  
+  if (!startDate || !expiryDate) {
+    alert('Please enter both start and expiry dates');
+    return;
+  }
+  
+  const ntpData = {
+    startDate: startDate,
+    expiryDate: expiryDate,
+    duration: document.getElementById('ntpDuration').value,
+    updatedAt: firebase.database.ServerValue.TIMESTAMP
+  };
+  
+  // Show loading state
+  const saveBtn = document.getElementById('saveNtpBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
+  
+  // Update the contract in Firebase
+  contractsRef.child(currentContractKey).update({
+    noticeToProceed: ntpData
+  })
+  .then(() => {
+    alert('Notice to Proceed information saved successfully');
+    closeModal('noticeToProceedModal');
+    checkSectionStatus(currentContractKey);
+    loadUserProjects(); // Refresh the projects list
+  })
+  .catch((error) => {
+    console.error('Error saving Notice to Proceed:', error);
+    alert('Error saving Notice to Proceed information');
+  })
+  .finally(() => {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save';
+  });
+}
+
+    // Save basic contract information
+    function saveBasicContractInfo() {
+      console.log("Save button clicked"); // Debug log
+      
+      // Get all form values
+      const updatedData = {
+        contractId: document.getElementById('contractId').value,
+        contractName: document.getElementById('contractName').value,
+        location: document.getElementById('location').value,
+        contractor: document.getElementById('contractor').value,
+        appropriation: document.getElementById('appropriation').value,
+        approvedBudgetCost: document.getElementById('approvedBudgetCost').value,
+        contractAmount: document.getElementById('contractAmount').value,
+        revisedContractAmount: document.getElementById('revisedContractAmount').value
+      };
+
+      console.log("Data to be saved:", updatedData); // Debug log
+      console.log("Current contract key:", currentContractKey); // Debug log
+
+      // Validate required fields
+      if (!updatedData.contractId || !updatedData.contractName || !updatedData.location) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      // Show loading state
+      saveBasicContractBtn.disabled = true;
+      saveBasicContractBtn.textContent = 'Saving...';
+
+      console.log("Attempting to save to Firebase..."); // Debug log
+
+      // Update the contract in Firebase
+      contractsRef.child(currentContractKey).update(updatedData)
+        .then(() => {
+          console.log("Successfully saved to Firebase"); // Debug log
+          alert('Contract information updated successfully');
+          closeModal('basicContractModal');
+          checkSectionStatus(currentContractKey);
+          loadUserProjects(); // Refresh the projects list
+        })
+        .catch((error) => {
+          console.error('Error updating contract:', error); // Debug log
+          alert('Error updating contract information: ' + error.message);
+        })
+        .finally(() => {
+          // Reset button state
+          saveBasicContractBtn.disabled = false;
+          saveBasicContractBtn.textContent = 'Save';
+        });
+        
+        document.getElementById('basicContractForm').addEventListener('submit', function(e) {
+          e.preventDefault();
+        });
+    }
+
+    async function downloadContractAsExcel(contractKey) {
+      try {
+    // Get contract data from Firebase
+    const snapshot = await contractsRef.child(contractKey).once('value');
+    const contractData = snapshot.val() || {};
+    
+    // Combine contract name and location with separator
+    const contractNameLocation = [
+      contractData.contractName,
+      contractData.location
+    ].filter(Boolean).join(" - ");
+
+    // Create workbook
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'Quality Assurance Section';
+    workbook.created = new Date();
+
+    // Add worksheet with landscape orientation
+    const worksheet = workbook.addWorksheet('PROJECT SUMMARY', {
+      pageSetup: {
+        paperSize: 9,
+        orientation: 'landscape',
+        margins: { left: 0.7, right: 0.7, top: 0.75, bottom: 0.75, header: 0.3, footer: 0.3 }
+      }
+    });
+
+        // Define headers and subheaders (maintaining original layout)
+        const headers = [
+          { main: 'CONTRACT ID', sub: [], field: 'contractId' },
+          { main: 'CONTRACT NAME/LOCATION', sub: [], field: 'contractName' },
+          { main: 'APPROPRIATION', sub: [], field: 'appropriation' },
+          { main: 'APPROVED BUDGET COST', sub: [], field: 'approvedBudgetCost' },
+          { main: 'CONTRACT AMOUNT', sub: [], field: 'contractAmount' },
+          { main: 'REVISED CONTRACT AMOUNT', sub: [], field: 'revisedContractAmount' },
+          { main: 'CONTRACTOR', sub: [], field: 'contractor' },
+          { main: 'CONTRACT DURATION', sub: [], field: 'noticeToProceed.duration' },
+          { main: 'NOTICE TO PROCEED', sub: [], field: 'noticeToProceed.startDate' },
+          { main: 'EXPIRATION DATE', sub: [], field: 'noticeToProceed.expiryDate' },
+          { main: 'REMAINING DAYS', sub: [], field: 'remainingDays' },
+          { main: 'STATUS OF PROJECT', sub: [], field: 'statusOfProject' },
+          { main: 'QUALITY CONTROL PROGRAM', sub: ['ORIGINAL', 'REVISED'], 
+            fields: ['qualityControlProgram.original', 'qualityControlProgram.revised'] },
+          { main: 'SWA (%)', sub: ['1ST BILLING', '2ND BILLING', '3RD BILLING', '4TH BILLING'],
+            fields: ['swa.firstBilling', 'swa.secondBilling', 'swa.thirdBilling', 'swa.fourthBilling'] },
+          { main: 'CQCA', sub: ['WEEKLY', 'MONTHLY'], 
+            fields: ['cqca.weekly', 'cqca.monthly'] },
+          { main: 'STATUS OF TEST', sub: [], field: 'statusOfTest' },
+          { main: 'STATUS OF FIELD AND LABORATORY TESTS', sub: [], field: 'statusOfFieldAndLabTests' },
+          { main: 'SUMMARY OF FIELD TEST', sub: [], field: 'summaryOfFieldTest' },
+          { main: 'MATERIALS INSPECTION REPORT', sub: [], field: 'materialsInspectionReport' },
+          { main: 'REPORT ON CONCRETE WORKS', sub: [], field: 'reportOnConcreteWorks' },
+          { main: 'SITE INSTRUCTIONS', sub: [], field: 'siteInstructions' },
+          { main: 'DESIGN MIX', sub: [], field: 'designMix' },
+          { main: 'TRIAL MIX', sub: [], field: 'trialMix' },
+          { main: 'GEOTAGGED PHOTOS', sub: [], field: 'geotaggedPhotos' },
+          { main: 'TEST REPORTS', sub: [], field: 'testReports' },
+          { main: 'POURING PERMITS', sub: [], field: 'pouringPermits' },
+          { main: 'ORIGINAL PLAN', sub: [], field: 'originalPlan' },
+          { main: 'AS STAKED PLAN', sub: [], field: 'asStakedPlan' },
+          { main: 'AS-BUILT PLAN', sub: [], field: 'asBuiltPlan' },
+          { main: 'PROGRAM OF WORKS', sub: [], field: 'programOfWorks' },
+          { main: 'VARIATIONS', sub: ['V.O.1', 'V.O.2', 'V.O.3', 'V.O.4'],
+            fields: ['variations.vo1', 'variations.vo2', 'variations.vo3', 'variations.vo4'] },
+          { main: 'TIME SUSPENSION REPORT', sub: [], field: 'timeSuspensionReport' },
+          { main: 'TIME EXTENSION REPORT', sub: [], field: 'timeExtensionReport' },
+          { main: "CONTRACTOR'S MATERIALS ENGINEER", sub: [], field: 'personnel.contractorsMaterialsEngineer.name' },
+          { main: 'PROJECT ENGINEER', sub: [], field: 'personnel.projectEngineer.name' },
+          { main: 'MATERIALS ENGINEER', sub: [], field: 'personnel.materialsEngineer.name' },
+          { main: "CONTRACTORS' MATERIALS ENGINEER", sub: [], field: 'personnel.contractorsMaterialsEngineer.name' },
+          { main: 'QUALITY ASSURANCE IN-CHARGE', sub: [], field: 'personnel.qaInCharge.name' }
+        ];
+
+         // Create header rows
+    const headerRow = worksheet.addRow([]);
+    const subHeaderRow = worksheet.addRow([]);
+
+    let colIndex = 1;
+    headers.forEach(header => {
+      if (header.sub.length > 0) {
+        worksheet.mergeCells(1, colIndex, 1, colIndex + header.sub.length - 1);
+        headerRow.getCell(colIndex).value = header.main;
+        header.sub.forEach((sub, i) => {
+          subHeaderRow.getCell(colIndex + i).value = sub;
+        });
+        colIndex += header.sub.length;
+      } else {
+        worksheet.mergeCells(1, colIndex, 2, colIndex);
+        headerRow.getCell(colIndex).value = header.main;
+        colIndex++;
+      }
+    });
+
+    // Style header rows
+    [headerRow, subHeaderRow].forEach((row, i) => {
+      row.eachCell(cell => {
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: i === 0 ? 11 : 10 };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: i === 0 ? 'FF1C1C64' : 'FF3A3A8C' }
+        };
+        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+        cell.border = {
+          top: { style: 'thin' }, left: { style: 'thin' },
+          bottom: { style: 'thin' }, right: { style: 'thin' }
+        };
+      });
+    });
+
+    // Helper functions
+    function getNestedValue(obj, path) {
+      return path.split('.').reduce((o, p) => (o === null || o === undefined ? '' : o[p] || ''), obj);
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return '';
+      try {
+        const date = new Date(dateString);
+        return isNaN(date.getTime()) ? dateString : date.toLocaleDateString();
+      } catch {
+        return dateString;
+      }
+    }
+
+    function calculateRowHeight(text, baseHeight = 20, charPerLine = 50) {
+      if (!text) return baseHeight;
+      const lineCount = Math.ceil(text.length / charPerLine);
+      return baseHeight + (lineCount - 1) * 15;
+    }
+
+    // Set column widths
+    worksheet.getColumn(2).width = 40; // Wider column for contract name/location
+    const totalCols = headers.reduce((sum, h) => sum + (h.sub.length || 1), 0);
+    for (let i = 1; i <= totalCols; i++) {
+      if (i !== 2) worksheet.getColumn(i).width = 20; // Default width for other columns
+    }
+
+    // Add data row
+    const dataRow = worksheet.addRow([]);
+    colIndex = 1;
+    
+    headers.forEach(header => {
+      if (header.sub.length > 0) {
+        header.fields.forEach(field => {
+          const value = field.includes('Date') 
+            ? formatDate(getNestedValue(contractData, field))
+            : getNestedValue(contractData, field);
+          dataRow.getCell(colIndex).value = value;
+          colIndex++;
+        });
+      } else {
+        let value;
+        if (header.field === 'contractName') {
+          value = contractNameLocation;
+        } else if (header.field.includes('noticeToProceed')) {
+          value = header.field.includes('Date')
+            ? formatDate(getNestedValue(contractData, header.field))
+            : getNestedValue(contractData, header.field);
+        } else {
+          value = getNestedValue(contractData, header.field);
+        }
+        dataRow.getCell(colIndex).value = value;
+        colIndex++;
+      }
+    });
+
+    // Apply dynamic height and styling
+    dataRow.height = calculateRowHeight(contractNameLocation);
+    dataRow.eachCell(cell => {
+      cell.font = { size: 11 };
+      cell.alignment = { vertical: 'middle', wrapText: true };
+      cell.border = {
+        top: { style: 'thin' }, left: { style: 'thin' },
+        bottom: { style: 'thin' }, right: { style: 'thin' }
+      };
+    });
+
+    // Freeze headers
+    worksheet.views = [{ state: 'frozen', ySplit: 2 }];
+
+    // Generate and download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Project_Summary_${contractData.contractId || contractKey}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+
+  } catch (error) {
+    console.error('Error generating Excel:', error);
+    alert('Error generating Excel file. Please check console for details.');
+  }
+}
+
+    // Helper function to get nested values
+    function getNestedValue(obj, path) {
+  try {
+    return path.split('.').reduce((o, p) => {
+      // Handle cases where intermediate properties might be null/undefined
+      if (o === null || o === undefined) return '';
+      // Handle arrays if needed
+      if (Array.isArray(o)) return o.map(item => item[p]).filter(Boolean).join(', ');
+      return o[p] ?? '';
+    }, obj);
+  } catch (error) {
+    console.warn(`Error accessing path ${path}:`, error);
+    return '';
+  }
+}
+
+function formatDate(dateString) {
+  if (!dateString) return '';
+  try {
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? dateString : date.toLocaleDateString();
+  } catch {
+    return dateString;
+  }
+}
+
+
+
+    async function downloadAllProjectsAsExcel() {
+      if (!currentUserContracts || currentUserContracts.length === 0) {
+    alert('No projects to download');
+    return;
+  }
+
+  try {
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'Quality Assurance Section';
+    workbook.created = new Date();
+
+    // Main summary worksheet
+    const worksheet = workbook.addWorksheet('ALL PROJECTS SUMMARY', {
+      pageSetup: {
+        paperSize: 9,
+        orientation: 'landscape',
+        margins: { left: 0.7, right: 0.7, top: 0.75, bottom: 0.75, header: 0.3, footer: 0.3 }
+      }
+    });
+
+        // Define headers (same structure as single project download)
+        const headers = [
+          { main: 'CONTRACT ID', sub: [], field: 'contractId' },
+          { main: 'CONTRACT NAME/LOCATION', sub: [], field: 'contractName' },
+          { main: 'APPROPRIATION', sub: [], field: 'appropriation' },
+          { main: 'APPROVED BUDGET COST', sub: [], field: 'approvedBudgetCost' },
+          { main: 'CONTRACT AMOUNT', sub: [], field: 'contractAmount' },
+          { main: 'REVISED CONTRACT AMOUNT', sub: [], field: 'revisedContractAmount' },
+          { main: 'CONTRACTOR', sub: [], field: 'contractor' },
+          { main: 'CONTRACT DURATION', sub: [], field: 'noticeToProceed.duration' },
+          { main: 'NOTICE TO PROCEED', sub: [], field: 'noticeToProceed.startDate' },
+          { main: 'EXPIRATION DATE', sub: [], field: 'noticeToProceed.expiryDate' },
+          { main: 'REMAINING DAYS', sub: [], field: 'remainingDays' },
+          { main: 'STATUS OF PROJECT', sub: [], field: 'statusOfProject' },
+          { main: 'QUALITY CONTROL PROGRAM', sub: ['ORIGINAL', 'REVISED'], 
+            fields: ['qualityControlProgram.original', 'qualityControlProgram.revised'] },
+          { main: 'CQCA', sub: ['WEEKLY', 'MONTHLY'], 
+            fields: ['cqca.weekly', 'cqca.monthly'] },
+          { main: 'VARIATIONS', sub: ['V.O.1', 'V.O.2', 'V.O.3', 'V.O.4'],
+            fields: ['variations.vo1', 'variations.vo2', 'variations.vo3', 'variations.vo4'] },
+          { main: 'TIME SUSPENSION REPORT', sub: [], field: 'timeSuspensionReport' },
+          { main: 'TIME EXTENSION REPORT', sub: [], field: 'timeExtensionReport' },
+          { main: "CONTRACTOR'S MATERIALS ENGINEER", sub: [], field: 'personnel.contractorsMaterialsEngineer.name' },
+          { main: 'PROJECT ENGINEER', sub: [], field: 'personnel.projectEngineer.name' },
+          { main: 'MATERIALS ENGINEER', sub: [], field: 'personnel.materialsEngineer.name' },
+          { main: 'QUALITY ASSURANCE IN-CHARGE', sub: [], field: 'personnel.qaInCharge.name' }
+        ];
+
+         // Create header rows
+    const headerRow = worksheet.addRow([]);
+    const subHeaderRow = worksheet.addRow([]);
+
+    let colIndex = 1;
+    headers.forEach(header => {
+      if (header.sub.length > 0) {
+        worksheet.mergeCells(1, colIndex, 1, colIndex + header.sub.length - 1);
+        headerRow.getCell(colIndex).value = header.main;
+        header.sub.forEach((sub, i) => {
+          subHeaderRow.getCell(colIndex + i).value = sub;
+        });
+        colIndex += header.sub.length;
+      } else {
+        worksheet.mergeCells(1, colIndex, 2, colIndex);
+        headerRow.getCell(colIndex).value = header.main;
+        colIndex++;
+      }
+    });
+
+    // Style header rows
+    [headerRow, subHeaderRow].forEach((row, i) => {
+      row.eachCell(cell => {
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: i === 0 ? 11 : 10 };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: i === 0 ? 'FF1C1C64' : 'FF3A3A8C' }
+        };
+        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+        cell.border = {
+          top: { style: 'thin' }, left: { style: 'thin' },
+          bottom: { style: 'thin' }, right: { style: 'thin' }
+        };
+      });
+    });
+
+    // Helper functions
+    function getNestedValue(obj, path) {
+      return path.split('.').reduce((o, p) => (o === null || o === undefined ? '' : o[p] || ''), obj);
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return '';
+      try {
+        const date = new Date(dateString);
+        return isNaN(date.getTime()) ? dateString : date.toLocaleDateString();
+      } catch {
+        return dateString;
+      }
+    }
+
+    function calculateRowHeight(text, baseHeight = 20, charPerLine = 50) {
+      if (!text) return baseHeight;
+      const lineCount = Math.ceil(text.length / charPerLine);
+      return baseHeight + (lineCount - 1) * 15;
+    }
+
+    // Set column widths
+    worksheet.getColumn(2).width = 40; // Wider column for contract name/location
+    const totalCols = headers.reduce((sum, h) => sum + (h.sub.length || 1), 0);
+    for (let i = 1; i <= totalCols; i++) {
+      if (i !== 2) worksheet.getColumn(i).width = 20; // Default width for other columns
+    }
+
+    // Add data for all projects
+    currentUserContracts.forEach(project => {
+      const dataRow = worksheet.addRow([]);
+      const contractNameLocation = [
+        project.contractName,
+        project.location
+      ].filter(Boolean).join(" - ");
+
+      let colIndex = 1;
+      
+      headers.forEach(header => {
+        if (header.sub.length > 0) {
+          header.fields.forEach(field => {
+            const value = field.includes('Date') 
+              ? formatDate(getNestedValue(project, field))
+              : getNestedValue(project, field);
+            dataRow.getCell(colIndex).value = value;
+            colIndex++;
+          });
+        } else {
+          let value;
+          if (header.field === 'contractName') {
+            value = contractNameLocation;
+          } else if (header.field.includes('noticeToProceed')) {
+            value = header.field.includes('Date')
+              ? formatDate(getNestedValue(project, header.field))
+              : getNestedValue(project, header.field);
+          } else {
+            value = getNestedValue(project, header.field);
+          }
+          dataRow.getCell(colIndex).value = value;
+          colIndex++;
+        }
+      });
+
+      // Apply dynamic height and styling
+      dataRow.height = calculateRowHeight(contractNameLocation);
+      dataRow.eachCell(cell => {
+        cell.font = { size: 11 };
+        cell.alignment = { vertical: 'middle', wrapText: true };
+        cell.border = {
+          top: { style: 'thin' }, left: { style: 'thin' },
+          bottom: { style: 'thin' }, right: { style: 'thin' }
+        };
+      });
+    });
+
+    // Freeze headers
+    worksheet.views = [{ state: 'frozen', ySplit: 2 }];
+
+    // Download the file
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ALL_PROJECTS_${currentUserName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+
+  } catch (error) {
+    console.error('Error generating Excel:', error);
+    alert('Error generating Excel file. Please check console for details.');
+  }
+}
+
+    // Search functionality
+    function filterProjects(searchTerm) {
+      searchTerm = searchTerm.toLowerCase();
+      if (!currentUserContracts) return;
+      
+      const filteredProjects = currentUserContracts.filter(project => {
+        return (
+          (project.contractId && project.contractId.toLowerCase().includes(searchTerm)) ||
+          (project.contractName && project.contractName.toLowerCase().includes(searchTerm)) ||
+          (project.contractor && project.contractor.toLowerCase().includes(searchTerm))
+        );
+      });
+      
+      displayProjects(filteredProjects);
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+
+      // Add this to your setupEventListeners function:
+document.getElementById('saveNtpBtn').addEventListener('click', saveNoticeToProceed);
+      // Logout button
+      logoutBtn.addEventListener('click', logout);
+      
+      // Search input
+      searchInput.addEventListener('input', (e) => {
+        filterProjects(e.target.value);
+      });
+
+      // Download All button
+      downloadAllBtn.addEventListener('click', downloadAllProjectsAsExcel);
+      saveBasicContractBtn.addEventListener('click', saveBasicContractInfo);
+      shareProjectBtn.addEventListener('click', shareProjectWithUser);
+    }
+
+    // Close modal
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
+    // Logout function
+    function logout() {
+      auth.signOut().then(() => {
+        window.location.href = 'index.html';
+      }).catch(error => {
+        console.error('Logout error:', error);
+      });
+    }
+  document.addEventListener('DOMContentLoaded', function() {
+  // Check for highlight parameter in URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const highlightContractId = urlParams.get('highlight');
+  
+  if (highlightContractId) {
+    // Function to find and highlight the contract card
+    const highlightContractCard = () => {
+      const contractCards = document.querySelectorAll('.contract-card');
+      let found = false;
+      
+      contractCards.forEach(card => {
+        const cardContractId = card.querySelector('.card-header h3')?.textContent.trim();
+        if (cardContractId === highlightContractId.trim()) {
+          found = true;
+          // Add highlight class
+          card.classList.add('highlight-blink');
+          
+          // Scroll to the card
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          
+          // Remove the class after animation completes (3 seconds)
+          setTimeout(() => {
+            card.classList.remove('highlight-blink');
+          }, 3000);
+        }
+      });
+      
+      // If not found immediately, try again after a short delay (for async loading)
+      if (!found) {
+        setTimeout(highlightContractCard, 500);
+      } else {
+        // Remove the highlight parameter from URL without reloading
+        const newUrl = window.location.pathname + window.location.search.replace(/highlight=[^&]*&?/, '').replace(/[?&]$/, '');
+        window.history.replaceState({}, document.title, newUrl);
+      }
+    };
+    
+    // Start the highlighting process
+    highlightContractCard();
+  }
+});
+
+
+// Add this at the end of your script in my_projects.html
+function initContractHighlighting() {
+  // Get the contract ID from URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const contractIdToHighlight = urlParams.get('highlight');
+  
+  if (!contractIdToHighlight) return;
+
+  // Function to highlight the contract card
+  const highlightContractCard = () => {
+    const contractCards = document.querySelectorAll('.contract-card');
+    
+    contractCards.forEach(card => {
+      const headerElement = card.querySelector('.card-header h3');
+      if (headerElement && headerElement.textContent.trim() === contractIdToHighlight.trim()) {
+        // Add highlight class
+        card.classList.add('highlight-blink');
+        
+        // Scroll to the card
+        setTimeout(() => {
+          card.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+        }, 100);
+        
+        // Remove highlight after 3 seconds
+        setTimeout(() => {
+          card.classList.remove('highlight-blink');
+          
+          // Clean URL without reloading
+          const newUrl = window.location.pathname;
+          window.history.replaceState({}, document.title, newUrl);
+        }, 3000);
+      }
+    });
+  };
+
+  // Try highlighting immediately
+  highlightContractCard();
+  
+  // If contracts load asynchronously, set up a mutation observer
+  const observer = new MutationObserver((mutations) => {
+    highlightContractCard();
+  });
+  
+  // Observe the contracts container for changes
+  const contractsContainer = document.getElementById('contractsContainer');
+  if (contractsContainer) {
+    observer.observe(contractsContainer, {
+      childList: true,
+      subtree: true
+    });
+    
+    // Stop observing after 5 seconds to prevent memory leaks
+    setTimeout(() => {
+      observer.disconnect();
+    }, 5000);
+  }
+}
+
+// Call this when the DOM is loaded and after projects are loaded
+document.addEventListener('DOMContentLoaded', initContractHighlighting);
+
+// Also call it after your projects are loaded (at the end of displayProjects function
+
+function navigateToFilesSection(contractId, section) {
+  // Store the target section and contract in localStorage
+  localStorage.setItem('targetSection', section);
+  localStorage.setItem('targetContract', contractId);
+  
+  // Navigate to the Files page
+  window.location.href = 'files_user.html';
+}
+    
+  </script>
+</body>
+
+</html>
